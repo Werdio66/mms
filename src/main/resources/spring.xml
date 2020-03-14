@@ -10,10 +10,10 @@
     <!-- 事务注解 -->
     <tx:annotation-driven transaction-manager="txManager"/>
 
-    <context:component-scan base-package="com.lx.mms">
+  <!--  <context:component-scan base-package="com.lx.mms">
         <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
     </context:component-scan>
-
+-->
     <!-- 整合mybatis和spring-->
 
     <context:property-placeholder location="classpath:db.properties" system-properties-mode="NEVER"/>
