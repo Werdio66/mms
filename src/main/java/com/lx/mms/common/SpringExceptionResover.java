@@ -1,5 +1,6 @@
 package com.lx.mms.common;
 
+import com.lx.mms.exception.ParamException;
 import com.lx.mms.exception.PermissionException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -32,7 +33,7 @@ public class SpringExceptionResover implements HandlerExceptionResolver {
         if (url.endsWith(".json")){
 
             // 判断是不是自定义的异常类
-            if (ex instanceof PermissionException){
+            if (ex instanceof PermissionException || ex instanceof ParamException){
                 RespData respData = RespData.error(ex.getMessage());
                 mv = new ModelAndView("jsonView", respData.toMap());
             }else {

@@ -8,7 +8,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.util.List;
 
-@SpringJUnitConfig(locations = "classpath:applicationContext.xml")
+@SpringJUnitConfig(locations = "classpath:mvc.xml")
 public class UserTest {
 
     @Autowired
@@ -34,4 +34,5 @@ public class UserTest {
         user.setOperatorIp("ffffgghhjj");
         System.out.println(sysUserMapper.insert(user));
     }
+
 }
