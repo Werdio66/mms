@@ -7,8 +7,15 @@
        http://www.springframework.org/schema/context
        http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
+     <!-- DI 注解解析器-->
+    <context:annotation-config/>
+    <!-- IoC 注解解析器-->
+    <context:component-scan base-package="com.lx.mms"/>
     <!-- 事务注解 -->
     <tx:annotation-driven transaction-manager="txManager"/>
+
+    <!-- 加载应用上下文bean -->
+<!--    <bean class="com.lx.mms.common.ApplicationContextHelper" lazy-init="false"/>-->
 
   <!--  <context:component-scan base-package="com.lx.mms">
         <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>

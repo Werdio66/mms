@@ -2,6 +2,8 @@ package com.lx.mms.util;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import com.lx.mms.exception.ParamException;
+import org.apache.commons.collections.MapUtils;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -66,23 +68,6 @@ public class BeanValidation {
     }
 
     /**
-     *  封装俩个校验方法
-     * @param obj
-     * @param objs
-     * @return
-     */
-   /* public static Map<String, String> validateObj(Object obj, Object ... objs){
-        Preconditions.checkNotNull(obj);
-
-        if (objs.length > 0){
-            return validate(Lists.asList(obj, objs));
-        }
-
-        return validate(obj, new Class[0]);
-    }
-    */
-
-    /**
      *  校验对象中的字段
      * @param objects   要校验的对象
      * @return          校验对的错误信息，key ：字段名，value ：错误信息
@@ -95,5 +80,13 @@ public class BeanValidation {
         }
 
         return validateList(Arrays.asList(objects));
+    }
+
+    public static void check(Object ... object){
+        Map<String, String> map = validateObj(object);
+
+        if (MapUtils.isNotEmpty(map)){
+            throw new ParamException(map.toString());
+        }
     }
 }

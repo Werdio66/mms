@@ -60,6 +60,14 @@ public class RespData {
     /**
      *  返回成功状态，信息和数据
      */
+    public static RespData ok(Object data){
+        return new RespData(true, "", data);
+
+    }
+
+    /**
+     *  返回成功状态，信息和数据
+     */
     public static RespData ok(String msg, Object data){
         return new RespData(true, msg, data);
 

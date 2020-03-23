@@ -89,6 +89,6 @@
   "pkColumn" : null,
   "otherColumn" : null,
   "savePackageName" : "",
-  "savePath" : "./src/main/java",
+  "savePath" : "./src/main/resources",
   "saveModelName" : "mms.main"
 }

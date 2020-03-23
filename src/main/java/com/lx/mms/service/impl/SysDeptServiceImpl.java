@@ -1,11 +1,17 @@
 package com.lx.mms.service.impl;
 
+import com.google.common.base.Preconditions;
 import com.lx.mms.entity.SysDept;
+import com.lx.mms.entity.param.DeptParam;
+import com.lx.mms.exception.ParamException;
 import com.lx.mms.mapper.SysDeptMapper;
 import com.lx.mms.service.SysDeptService;
+import com.lx.mms.util.BeanValidation;
+import com.lx.mms.util.LevelUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -66,13 +72,69 @@ public class SysDeptServiceImpl implements SysDeptService {
     /**
      * 修改数据
      *
-     * @param sysDept 实例对象
+     * @param deptParam 更新后的参数
      * @return 实例对象
      */
     @Override
-    public SysDept update(SysDept sysDept) {
-        this.sysDeptMapper.update(sysDept);
-        return this.queryById(sysDept.getId());
+    public int update(DeptParam deptParam) {
+        // 校验参数
+        BeanValidation.check(deptParam);
+
+//        SysDept before = sysDeptMapper.queryById(deptParam.getId());
+//        Preconditions.checkNotNull(before, "要更新的部门不存在");
+
+        // 通过构建者模式创建对象
+        SysDept dept = buildDept(deptParam);
+        dept.setId(deptParam.getId());
+        return sysDeptMapper.update(dept);
+    }
+
+    @Override
+    public int save(DeptParam deptParam) {
+        checkDept(deptParam);
+        // 通过构建者模式创建对象
+        SysDept dept = buildDept(deptParam);
+        return sysDeptMapper.insert(dept);
+    }
+
+    // 校验参数
+    private void checkDept(DeptParam deptParam){
+        // 校验参数
+        BeanValidation.check(deptParam);
+        // 检查部门是否已经存在
+        if (checkExist(deptParam.getParentId(), deptParam.getName(), deptParam.getId())){
+            throw new ParamException("同一层级下存在相同的部门");
+        }
+    }
+
+    // 根据传入的参数构建 dept 对象
+    private SysDept buildDept(DeptParam deptParam){
+
+        // 通过构建者模式创建对象
+        SysDept dept = SysDept.builder().name(deptParam.getName()).remark(deptParam.getRemark())
+                .parentId(deptParam.getParentId()).seq(deptParam.getSeq())
+                .build();
+
+        // 设置层级
+        dept.setLevel(LevelUtil.caculatateLevel(getLevel(deptParam.getParentId()), deptParam.getParentId()));
+        //
+        dept.setOperator("sys"); // TODO
+        dept.setOpetatorIp(""); // TODO
+        dept.setOperatorTime(LocalDateTime.now());
+
+        return dept;
+    }
+
+    /**
+     *  检查要插入的部门是否已经存在
+     * @param parentId
+     * @param deptName
+     * @param deptId
+     * @return
+     */
+    private boolean checkExist(Long parentId, String deptName, Long deptId) {
+        SysDept dept = sysDeptMapper.queryByParentIdAndDeptName(parentId, deptName);
+        return dept != null;
     }
 
     /**
@@ -84,5 +146,17 @@ public class SysDeptServiceImpl implements SysDeptService {
     @Override
     public boolean deleteById(Long id) {
         return this.sysDeptMapper.deleteById(id) > 0;
+    }
+
+    // 获取部门的层级
+    private String getLevel(Long deptId){
+
+        SysDept dept = sysDeptMapper.queryById(deptId);
+
+        if (dept == null){
+            return null;
+        }
+
+        return dept.getLevel();
     }
 }

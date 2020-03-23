@@ -13,19 +13,24 @@ repositories {
 }
 
 dependencies {
+
     testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.5.2'
 
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.10.3'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.3'
-
+    // lombok
     providedCompile group: 'org.projectlombok', name: 'lombok', version: '1.18.12'
 
+    // mybatis
     compile group: 'org.mybatis', name: 'mybatis', version: '3.5.4'
     compile group: 'org.mybatis', name: 'mybatis-spring', version: '2.0.4'
 
+    // mybatis 分页
+    compile group: 'com.github.pagehelper', name: 'pagehelper', version: '5.1.11'
+
+    // mysql
     compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.17'
     compile group: 'com.alibaba', name: 'druid', version: '1.1.21'
 
+    // spring
     compile group: 'org.springframework', name: 'spring-context', version: '5.2.4.RELEASE'
     compile group: 'org.springframework', name: 'spring-web', version: '5.2.4.RELEASE'
     compile group: 'org.springframework', name: 'spring-webmvc', version: '5.2.4.RELEASE'
@@ -33,13 +38,33 @@ dependencies {
     compile group: 'org.springframework', name: 'spring-tx', version: '5.2.4.RELEASE'
     compile group: 'org.springframework', name: 'spring-jdbc', version: '5.2.4.RELEASE'
 
+    // servlet
     providedCompile group: 'javax.servlet', name: 'javax.servlet-api', version: '4.0.1'
-    compile group: 'javax.el', name: 'javax.el-api', version: '3.0.1-b06'
+    compile group: 'javax.el', name: 'javax.el-api', version: '3.0.0'
     providedCompile group: 'javax.servlet.jsp', name: 'javax.servlet.jsp-api', version: '2.3.3'
 
+    // 日志
     compile group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
     compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
 
-    compile group: 'com.github.pagehelper', name: 'pagehelper', version: '5.1.11'
+    // validate 校验
+    compile group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
+    compile group: 'org.hibernate.validator', name: 'hibernate-validator', version: '6.1.2.Final'
+
+//    compile group: 'org.hibernate.validator', name: 'hibernate-validator-annotation-processor', version: '6.1.2.Final'
+
+    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-guava', version: '2.10.3'
+
+    // tools
+    compile group: 'commons-collections', name: 'commons-collections', version: '3.2.2'
+    compile group: 'commons-codec', name: 'commons-codec', version: '1.14'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
+
+
+    // jackson
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.10.3'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.3'
+    compile group: 'org.codehaus.jackson', name: 'jackson-core-asl', version: '1.9.13'
+    compile group: 'org.codehaus.jackson', name: 'jackson-mapper-asl', version: '1.9.13'
 }

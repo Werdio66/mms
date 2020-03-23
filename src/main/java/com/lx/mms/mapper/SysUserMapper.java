@@ -2,6 +2,8 @@ package com.lx.mms.mapper;
 
 import com.lx.mms.entity.SysUser;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 
 /**

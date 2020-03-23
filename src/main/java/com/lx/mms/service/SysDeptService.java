@@ -1,6 +1,8 @@
 package com.lx.mms.service;
 
 import com.lx.mms.entity.SysDept;
+import com.lx.mms.entity.param.DeptParam;
+
 import java.util.List;
 
 /**
@@ -46,10 +48,10 @@ public interface SysDeptService {
     /**
      * 修改数据
      *
-     * @param sysDept 实例对象
-     * @return 实例对象
+     * @param deptParam 更新后的参数
+     * @return 受影响行数
      */
-    SysDept update(SysDept sysDept);
+    int update(DeptParam deptParam);
 
     /**
      * 通过主键删除数据
@@ -59,4 +61,8 @@ public interface SysDeptService {
      */
     boolean deleteById(Long id);
 
+    /**
+     *  保存部门
+     */
+    int save(DeptParam deptParam);
 }
