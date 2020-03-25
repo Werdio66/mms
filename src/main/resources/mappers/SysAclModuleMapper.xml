@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lx.mms.mapper.SysAclModuleMapper">
+
+    <resultMap type="com.lx.mms.entity.SysAclModule" id="SysAclModuleMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="parentId" column="parent_id" jdbcType="INTEGER"/>
+        <result property="level" column="level" jdbcType="VARCHAR"/>
+        <result property="seq" column="seq" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="operator" column="operator" jdbcType="VARCHAR"/>
+        <result property="operatorTime" column="operator_time" jdbcType="TIMESTAMP"/>
+        <result property="opetatorIp" column="opetator_ip" jdbcType="VARCHAR"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="SysAclModuleMap">
+        select
+          id, name, parent_id, level, seq, remark, operator, operator_time, opetator_ip, status
+        from mms.sys_acl_module
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="SysAclModuleMap">
+        select
+          id, name, parent_id, level, seq, remark, operator, operator_time, opetator_ip, status
+        from mms.sys_acl_module
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="SysAclModuleMap">
+        select
+          id, name, parent_id, level, seq, remark, operator, operator_time, opetator_ip, status
+        from mms.sys_acl_module
+
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into mms.sys_acl_module(name, parent_id, level, seq, remark, operator, operator_time, opetator_ip, status)
+        values (#{name}, #{parentId}, #{level}, #{seq}, #{remark}, #{operator}, #{operatorTime}, #{opetatorIp}, #{status})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update mms.sys_acl_module
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="parentId != null">
+                parent_id = #{parentId},
+            </if>
+            <if test="level != null and level != ''">
+                level = #{level},
+            </if>
+            <if test="seq != null">
+                seq = #{seq},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+            <if test="operator != null and operator != ''">
+                operator = #{operator},
+            </if>
+            <if test="operatorTime != null">
+                operator_time = #{operatorTime},
+            </if>
+            <if test="opetatorIp != null and opetatorIp != ''">
+                opetator_ip = #{opetatorIp},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from mms.sys_acl_module where id = #{id}
+    </delete>
+
+</mapper>
