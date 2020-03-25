@@ -1,6 +1,8 @@
 package com.lx.mms.service;
 
 import com.lx.mms.entity.SysUser;
+import com.lx.mms.entity.param.UserParam;
+
 import java.util.List;
 
 /**
@@ -59,4 +61,7 @@ public interface SysUserService {
      */
     boolean deleteById(Long id);
 
+    int save(UserParam userParam);
+
+    SysUser findByKeyword(String username);
 }

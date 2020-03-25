@@ -1,10 +1,14 @@
 package com.lx.mms.controller;
 
+import com.lx.mms.common.RespData;
 import com.lx.mms.entity.SysUser;
+import com.lx.mms.entity.param.UserParam;
 import com.lx.mms.service.SysUserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * (SysUser)表控制层
@@ -12,8 +16,9 @@ import javax.annotation.Resource;
  * @author Werdio丶
  * @since 2020-03-14 09:56:17
  */
+@Slf4j
 @RestController
-@RequestMapping("sysUser")
+@RequestMapping("/sys/user")
 public class SysUserController {
     /**
      * 服务对象
@@ -21,15 +26,21 @@ public class SysUserController {
     @Resource
     private SysUserService sysUserService;
 
-    /**
-     * 通过主键查询单条数据
-     *
-     * @param id 主键
-     * @return 单条数据
-     */
-    @GetMapping("selectOne")
-    public SysUser selectOne(Long id) {
-        return this.sysUserService.queryById(id);
+    @ResponseBody
+    @GetMapping("/queryAll.json")
+    public RespData queryAll(){
+        log.info("查询用户信息：");
+        List<SysUser> sysUsers = sysUserService.queryAll();
+
+        return RespData.ok(sysUsers);
     }
 
+    @ResponseBody
+    @PostMapping("/save.json")
+    public RespData save(UserParam userParam){
+        log.info("添加用户：");
+        log.info("用户信息：{}", userParam);
+        int row = sysUserService.save(userParam);
+        return RespData.ok(row);
+    }
 }

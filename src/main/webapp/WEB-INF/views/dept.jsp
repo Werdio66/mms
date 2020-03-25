@@ -173,30 +173,60 @@
 </ol>
 </script>
 
-<%--<script id="userListTemplate" type="x-tmpl-mustache">
+<script id="userListTemplate" type="x-tmpl-mustache">
 {{#userList}}
 <tr role="row" class="user-name odd" data-id="{{id}}"><!--even -->
     <td><a href="#" class="user-edit" data-id="{{id}}">{{username}}</a></td>
     <td>{{showDeptName}}</td>
-    <td>{{mail}}</td>
+    <td>{{mall}}</td>
     <td>{{telephone}}</td>
     <td>{{#bold}}{{showStatus}}{{/bold}}</td> <!-- 此处套用函数对status做特殊处理 -->
     <td>
         <div class="hidden-sm hidden-xs action-buttons">
-            <a class="green user-edit" href="#" data-id="{{id}}">
+
+            <a class="green user-edit" onclick="getId({{id}});" data-id="{{id}}">
                 <i class="ace-icon fa fa-pencil bigger-100"></i>
             </a>
-            <a class="red user-acl" href="#" data-id="{{id}}">
+            <a class="red user-acl" onclick="getId({{id}});" data-id="{{id}}">
                 <i class="ace-icon fa fa-flag bigger-100"></i>
             </a>
         </div>
     </td>
 </tr>
 {{/userList}}
-</script>--%>
+</script>
 
 <script type="application/javascript">
 
+    // 存储用户信息
+    var userList;
+    var userListTemplate = $('#userListTemplate').html();
+    Mustache.parse(userListTemplate);
+
+    loadUserList();
+
+    function loadUserList() {
+        console.log('加载用户信息：');
+        $.ajax({
+            url : '/sys/user/queryAll.json',
+            method : 'get',
+            data : {},
+            success : function (result) {
+                console.log('返回的结果：', result);
+                if (result.rec){
+                    console.log('加载用户信息成功');
+                    userList = result.data;
+                    // 渲染
+                    var render = Mustache.render(userListTemplate, {userList: result.data});
+                    console.log(render);
+                    $("#userList").html(render);
+                }else {
+                    showMessage('加载用户信息', result.msg, false);
+                }
+            }
+        })
+    }
+    // ===================================== 部门信息 ==============================
     // 获取操作部门的 id
     var id;
     function getId(data) {

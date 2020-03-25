@@ -63,4 +63,9 @@ public interface SysUserMapper {
      */
     int deleteById(Long id);
 
+    SysUser findByKeyword(String username);
+
+    int countByMail(String mail);
+
+    int countByTelephone(String telephone);
 }

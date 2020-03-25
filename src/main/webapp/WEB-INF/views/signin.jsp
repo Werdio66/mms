@@ -22,10 +22,10 @@
     <title>登陆</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="bootstrap3.3.5/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../bootstrap3.3.5/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom styles for this template -->
-    <link href="css/signin.css" rel="stylesheet">
+    <link href="../../css/signin.css" rel="stylesheet">
 
     <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
     <!--[if lt IE 9]><script src="js/ie8-responsive-file-warning.js"></script><![endif]-->
@@ -41,12 +41,12 @@
 <body>
 
 <div class="container">
-    <form class="form-signin" action="/login.page?ret=<%=ret%>" method="post">
+    <form class="form-signin" action="/user/login.page?ret=<%=ret%>" method="post">
         <h2 class="form-signin-heading">请登陆</h2>
         <label for="inputEmail" class="sr-only">邮箱/电话</label>
-        <input type="text" id="inputEmail" class="form-control" placeholder="Email/Telephone" name="username" required autofocus value="${username}">
+        <input type="text" id="inputEmail" class="form-control" placeholder="邮箱/手机号" name="username" required autofocus value="${username}">
         <label for="inputPassword" class="sr-only">密码</label>
-        <input type="password" id="inputPassword" class="form-control" placeholder="Password" name="password" required >
+        <input type="password" id="inputPassword" class="form-control" placeholder="密码" name="password" required >
         <div class="checkbox" style="color: red;">${error}</div>
         <button class="btn btn-lg btn-primary btn-block" type="submit">登 陆</button>
     </form>
