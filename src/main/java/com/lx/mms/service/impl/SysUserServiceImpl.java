@@ -1,5 +1,6 @@
 package com.lx.mms.service.impl;
 
+import com.github.pagehelper.PageInfo;
 import com.lx.mms.entity.SysUser;
 import com.lx.mms.entity.param.UserParam;
 import com.lx.mms.exception.BaseException;
@@ -71,13 +72,22 @@ public class SysUserServiceImpl implements SysUserService {
     /**
      * 修改数据
      *
-     * @param sysUser 实例对象
+     * @param userParam 实例对象
      * @return 实例对象
      */
     @Override
-    public SysUser update(SysUser sysUser) {
-        this.sysUserMapper.update(sysUser);
-        return this.queryById(sysUser.getId());
+    public int update(UserParam userParam) {
+         // 校验参数
+        BeanValidation.check(userParam);
+        // 检查邮箱是否存在
+        checkEmailExit(userParam.getMail(), userParam.getId());
+        // 检查手机号是否存在
+        checkTelephoneExit(userParam.getTelephone(), userParam.getId());
+
+        SysUser user = buildUser(userParam);
+
+        user.setId(userParam.getId());
+        return sysUserMapper.update(user);
     }
 
     /**
@@ -96,9 +106,10 @@ public class SysUserServiceImpl implements SysUserService {
         // 校验参数
         BeanValidation.check(userParam);
         // 检查邮箱是否存在
-        checkEmailExit(userParam.getMall());
+        checkEmailExit(userParam.getMail(), userParam.getId());
         // 检查手机号是否存在
-        checkTelephoneExit(userParam.getTelephone());
+        checkTelephoneExit(userParam.getTelephone(), userParam.getId());
+
 
         SysUser user = buildUser(userParam);
 
@@ -114,8 +125,16 @@ public class SysUserServiceImpl implements SysUserService {
         return user;
     }
 
+    @Override
+    public PageInfo<SysUser> queryByDeptId(Long deptId) {
+
+        List<SysUser> users = sysUserMapper.queryByDeptId(deptId);
+
+        return new PageInfo<>(users);
+    }
+
     private SysUser buildUser(UserParam userParam) {
-        SysUser user = SysUser.builder().mall(userParam.getMall()).deptId(userParam.getDeptId())
+        SysUser user = SysUser.builder().mall(userParam.getMail()).deptId(userParam.getDeptId())
                 .remark(userParam.getRemark()).status(userParam.getStatus())
                 .telephone(userParam.getTelephone()).username(userParam.getUsername()).build();
         
@@ -125,14 +144,14 @@ public class SysUserServiceImpl implements SysUserService {
         return user;
     }
 
-    private void checkTelephoneExit(String telephone) {
-        if (sysUserMapper.countByTelephone(telephone) > 0) {
+    private void checkTelephoneExit(String telephone, Long id) {
+        if (sysUserMapper.countByTelephone(telephone, id) > 0) {
             throw new BaseException("手机号已经存在");
         }
     }
 
-    private void checkEmailExit(String mall) {
-        if (sysUserMapper.countByMail(mall) > 0){
+    private void checkEmailExit(String mall, Long id) {
+        if (sysUserMapper.countByMail(mall, id) > 0){
             throw new BaseException("邮箱已经存在");
         }
     }

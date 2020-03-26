@@ -36,7 +36,7 @@ public class UserParam {
      * 邮箱
      */
     @NotBlank(message = "邮箱不能为空")
-    private String mall;
+    private String mail;
     /**
      * 用户的部门 id
      */
@@ -51,6 +51,6 @@ public class UserParam {
     /**
      * 备注
      */
-    @Length(min = 1, max = 200, message = "备注长度最多 200 个字符")
+    @Length(max = 200, message = "备注长度最多 200 个字符")
     private String remark;
 }

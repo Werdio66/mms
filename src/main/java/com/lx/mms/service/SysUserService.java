@@ -1,5 +1,6 @@
 package com.lx.mms.service;
 
+import com.github.pagehelper.PageInfo;
 import com.lx.mms.entity.SysUser;
 import com.lx.mms.entity.param.UserParam;
 
@@ -48,10 +49,10 @@ public interface SysUserService {
     /**
      * 修改数据
      *
-     * @param sysUser 实例对象
+     * @param userParam 实例对象
      * @return 实例对象
      */
-    SysUser update(SysUser sysUser);
+    int update(UserParam userParam);
 
     /**
      * 通过主键删除数据
@@ -64,4 +65,6 @@ public interface SysUserService {
     int save(UserParam userParam);
 
     SysUser findByKeyword(String username);
+
+    PageInfo<SysUser> queryByDeptId(Long deptId);
 }

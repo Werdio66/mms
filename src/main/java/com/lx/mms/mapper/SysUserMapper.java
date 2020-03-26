@@ -65,7 +65,9 @@ public interface SysUserMapper {
 
     SysUser findByKeyword(String username);
 
-    int countByMail(String mail);
+    int countByMail(@Param("mail") String mail, @Param("id") Long id);
 
-    int countByTelephone(String telephone);
+    int countByTelephone(@Param("telephone") String telephone, @Param("id") Long id);
+
+    List<SysUser> queryByDeptId(Long deptId);
 }

@@ -3,7 +3,7 @@
 <script id="paginateTemplate" type="x-tmpl-mustache">
 <div class="col-xs-6">
     <div class="dataTables_info" id="dynamic-table_info" role="status" aria-live="polite">
-        总共 {{total}} 中的 {{from}} ~ {{to}}
+        总共 {{total}} 页中的 {{from}} ~ {{to}}
     </div>
 </div>
     
@@ -34,24 +34,21 @@
 <script type="text/javascript">
     var paginateTemplate = $("#paginateTemplate").html();
     Mustache.parse(paginateTemplate);
-    
-    function renderPage(url, total, pageNo, pageSize, currentSize, idElement, callback) {
-        var maxPageNo = Math.ceil(total / pageSize);
+
+    function renderPage1(url, pageNum, pageSize, pageInfo, data) {
         var paramStartChar = url.indexOf("?") > 0 ? "&" : "?";
-        var from = (pageNo - 1) * pageSize + 1;
         var view = {
-            from: from > total ? total : from,
-            to: (from + currentSize - 1) > total ? total : (from + currentSize - 1),
-            total : total,
-            pageNo : pageNo,
+            total : pageInfo.total,
+            pageNo : pageNum,
             maxPageNo : maxPageNo,
-            nextPageNo: pageNo >= maxPageNo ? maxPageNo : (pageNo + 1),
-            beforePageNo : pageNo == 1 ? 1 : (pageNo - 1),
-            firstUrl : (pageNo == 1) ? '' : (url + paramStartChar + "pageNo=1&pageSize=" + pageSize),
-            beforeUrl: (pageNo == 1) ? '' : (url + paramStartChar + "pageNo=" + (pageNo - 1) + "&pageSize=" + pageSize),
-            nextUrl : (pageNo >= maxPageNo) ? '' : (url + paramStartChar + "pageNo=" + (pageNo + 1) + "&pageSize=" + pageSize),
-            lastUrl : (pageNo >= maxPageNo) ? '' : (url + paramStartChar + "pageNo=" + maxPageNo + "&pageSize=" + pageSize)
+            nextPageNo: pageInfo.hasNextPage ? pageInfo.nextPage : pageNum,
+            beforePageNo : !pageInfo.hasPreviousPage ? pageInfo.prePage : pageNum,
+            firstUrl : (pageNum == 1) ? '' : (url + paramStartChar + "pageNum=1&pageSize=" + pageSize),
+            beforeUrl: pageInfo.hasPreviousPage ? '' : (url + paramStartChar + "pageNum=" + pageInfo.prePage + "&pageSize=" + pageSize),
+            nextUrl : !pageInfo.hasNextPage ? '' : (url + paramStartChar + "pageNum=" + pageInfo.nextPage + "&pageSize=" + pageSize),
+            lastUrl : pageInfo.isLastPage ? "" : url + paramStartChar + "pageNum=" + pageInfo.pages + "&pageSize=" + pageSize
         };
+
         $("#" + idElement).html(Mustache.render(paginateTemplate, view));
 
         $(".page-action").click(function(e) {
@@ -61,6 +58,48 @@
             if(targetUrl != '') {
                 $.ajax({
                     url : targetUrl,
+                    data : data,
+                    success: function (result) {
+                        if (callback) {
+                            callback(result, url);
+                        }
+                    }
+                })
+            }
+        })
+    }
+
+    var json = {};
+
+    function renderPage(json, url, total, pageNo, pageSize, currentSize, idElement, callback) {
+        this.json = json;
+        var maxPageNo = Math.ceil(total / pageSize);
+        var paramStartChar = url.indexOf("?") > 0 ? "&" : "?";
+        var from = (pageNo - 1) * pageSize + 1;
+        var view = {
+            from: from > total ? total : from,
+            to: (from + currentSize - 1) > total ? total : (from + currentSize - 1),
+            total: total,
+            pageNo: pageNo,
+            maxPageNo: maxPageNo,
+            nextPageNo: pageNo >= maxPageNo ? maxPageNo : (pageNo + 1),
+            beforePageNo: pageNo == 1 ? 1 : (pageNo - 1),
+            firstUrl: (pageNo == 1) ? '' : (url + paramStartChar + "pageNo=1&pageSize=" + pageSize),
+            beforeUrl: (pageNo == 1) ? '' : (url + paramStartChar + "pageNo=" + (pageNo - 1) + "&pageSize=" + pageSize),
+            nextUrl: (pageNo >= maxPageNo) ? '' : (url + paramStartChar + "pageNo=" + (pageNo + 1) + "&pageSize=" + pageSize),
+            lastUrl: (pageNo >= maxPageNo) ? '' : (url + paramStartChar + "pageNo=" + maxPageNo + "&pageSize=" + pageSize)
+        };
+
+        $("#" + idElement).html(Mustache.render(paginateTemplate, view));
+
+        $(".page-action").click(function (e) {
+            e.preventDefault();
+            $("#" + idElement + " .pageNo").val($(this).attr("data-target"));
+            var targetUrl = $(this).attr("data-url");
+            if (targetUrl != '') {
+                $.ajax({
+                    url: targetUrl,
+                    data: this.json,
                     success: function (result) {
                         if (callback) {
                             callback(result, url);
