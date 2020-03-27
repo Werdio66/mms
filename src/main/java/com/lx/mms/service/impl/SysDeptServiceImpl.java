@@ -1,12 +1,14 @@
 package com.lx.mms.service.impl;
 
 import com.google.common.base.Preconditions;
+import com.lx.mms.common.RequestHolder;
 import com.lx.mms.entity.SysDept;
 import com.lx.mms.entity.param.DeptParam;
 import com.lx.mms.exception.ParamException;
 import com.lx.mms.mapper.SysDeptMapper;
 import com.lx.mms.service.SysDeptService;
 import com.lx.mms.util.BeanValidation;
+import com.lx.mms.util.IpUtil;
 import com.lx.mms.util.LevelUtil;
 import org.springframework.stereotype.Service;
 
@@ -118,8 +120,8 @@ public class SysDeptServiceImpl implements SysDeptService {
         // 设置层级
         dept.setLevel(LevelUtil.caculatateLevel(getLevel(deptParam.getParentId()), deptParam.getParentId()));
         //
-        dept.setOperator("sys"); // TODO
-        dept.setOpetatorIp(""); // TODO
+        dept.setOperator(RequestHolder.getCurrentUser().getUsername());
+        dept.setOpetatorIp(IpUtil.getRemoteIp(RequestHolder.getCurrentRequest()));
         dept.setOperatorTime(LocalDateTime.now());
 
         return dept;

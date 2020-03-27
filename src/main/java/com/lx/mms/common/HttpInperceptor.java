@@ -3,6 +3,7 @@ package com.lx.mms.common;
 import com.lx.mms.util.JsonMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
@@ -36,10 +37,17 @@ public class HttpInperceptor extends HandlerInterceptorAdapter {
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
         String uri = request.getRequestURI();
         log.info("{} 请求共花费 {} 毫秒", uri, System.currentTimeMillis() - begin);
+        // 在当前请求完成后，清除 threadlocal 中的数据
+        removeThreadLocalInfo();
     }
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
         super.afterCompletion(request, response, handler, ex);
+        removeThreadLocalInfo();
+    }
+
+    public void removeThreadLocalInfo(){
+        RequestHolder.remove();
     }
 }

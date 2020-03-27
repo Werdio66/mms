@@ -70,4 +70,8 @@ dependencies {
 
     // 分页插件
     compile group: 'com.github.pagehelper', name: 'pagehelper', version: '5.1.11'
+
+    // email
+    compile group: 'org.apache.commons', name: 'commons-email', version: '1.5'
+
 }

@@ -1,12 +1,15 @@
 package com.lx.mms.service.impl;
 
 import com.github.pagehelper.PageInfo;
+import com.lx.mms.common.RequestHolder;
 import com.lx.mms.entity.SysUser;
 import com.lx.mms.entity.param.UserParam;
 import com.lx.mms.exception.BaseException;
 import com.lx.mms.mapper.SysUserMapper;
 import com.lx.mms.service.SysUserService;
 import com.lx.mms.util.BeanValidation;
+import com.lx.mms.util.IpUtil;
+import com.lx.mms.util.MD5Util;
 import com.lx.mms.util.PasswordUtil;
 import org.springframework.stereotype.Service;
 
@@ -112,8 +115,8 @@ public class SysUserServiceImpl implements SysUserService {
 
 
         SysUser user = buildUser(userParam);
-
-        user.setPassword(PasswordUtil.getRandomPassword());
+        // 设置随机密码，并且使用 md5 加密
+        user.setPassword(MD5Util.encrypt(PasswordUtil.getRandomPassword()));
         // TODO:发送邮件确认信息
 
         return sysUserMapper.insert(user);
@@ -138,8 +141,9 @@ public class SysUserServiceImpl implements SysUserService {
                 .remark(userParam.getRemark()).status(userParam.getStatus())
                 .telephone(userParam.getTelephone()).username(userParam.getUsername()).build();
         
-        user.setOperator("sys"); // TODO
-        user.setOperatorIp(""); // TODO
+        user.setOperator(RequestHolder.getCurrentUser().getUsername());
+        user.setOperatorIp(IpUtil.getRemoteIp(RequestHolder.getCurrentRequest()));
+
         user.setOperatorTime(LocalDateTime.now());
         return user;
     }
