@@ -446,11 +446,10 @@
         var pageNo = $("#userPage .pageNo").val() || 1;
         console.log("当前页：", pageNo);
         var json = {
-          deptId : deptId,
           pageNum : pageNo,
           pageSize : pageSize
         };
-        var url = '/sys/user/queryByDeptId.json';
+        var url = '/sys/user/queryByDeptId.json?deptId=' + deptId;
         $.ajax({
             url : url,
             method : 'get',
@@ -504,11 +503,8 @@
             var pageSize = $("#pageSize").val();
             var pageNo = $("#userPage .pageNo").val() || 1;
             console.log("分页时的部门 id ：", deptId);
-            var json = {
-                deptId : deptId
-            };
-            // renderPage1(url, pageNo, pageSize, result.data, json);
-            renderPage(json, url, result.data.total, pageNo, pageSize, result.data.total > 0 ? result.data.list.length : 0, "userPage", renderUserListAndPage);
+
+            renderPage(url, result.data.total, pageNo, pageSize, result.data.total > 0 ? result.data.list.length : 0, "userPage", renderUserListAndPage);
         } else {
             showMessage("获取部门下用户列表", result.msg, false);
         }
