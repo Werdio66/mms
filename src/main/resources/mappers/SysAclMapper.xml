@@ -10,17 +10,17 @@
         <result property="url" column="url" jdbcType="VARCHAR"/>
         <result property="type" column="type" jdbcType="INTEGER"/>
         <result property="status" column="status" jdbcType="INTEGER"/>
-        <result property="seq" column="seq" jdbcType="VARCHAR"/>
+        <result property="seq" column="seq" jdbcType="INTEGER"/>
         <result property="remark" column="remark" jdbcType="VARCHAR"/>
         <result property="operator" column="operator" jdbcType="VARCHAR"/>
-        <result property="operatorTime" column="operator_time" jdbcType="TIMESTAMP"/>
-        <result property="operatorIp" column="operator_ip" jdbcType="VARCHAR"/>
+        <result property="operatorTime" column="operate_time" jdbcType="TIMESTAMP"/>
+        <result property="operatorIp" column="operate_ip" jdbcType="VARCHAR"/>
     </resultMap>
 
     <!--查询单个-->
     <select id="queryById" resultMap="SysAclMap">
         select
-          id, name, acl_module_id, code, url, type, status, seq, remark, operator, operator_time, operator_ip
+          id, name, acl_module_id, code, url, type, status, seq, remark, operator, operate_time, operate_ip
         from mms.sys_acl
         where id = #{id}
     </select>
@@ -28,7 +28,7 @@
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="SysAclMap">
         select
-          id, name, acl_module_id, code, url, type, status, seq, remark, operator, operator_time, operator_ip
+          id, name, acl_module_id, code, url, type, status, seq, remark, operator, operate_time, operate_ip
         from mms.sys_acl
         limit #{offset}, #{limit}
     </select>
@@ -36,14 +36,20 @@
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="SysAclMap">
         select
-          id, name, acl_module_id, code, url, type, status, seq, remark, operator, operator_time, operator_ip
+          id, name, acl_module_id, code, url, type, status, seq, remark, operator, operate_time, operate_ip
         from mms.sys_acl
 
     </select>
 
+    <select id="querybyAclModelId" resultMap="SysAclMap">
+        select
+          id, name, acl_module_id, code, url, type, status, seq, remark, operator, operate_time, operate_ip
+        from mms.sys_acl
+        where acl_module_id = #{aclModuleId}
+    </select>
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into mms.sys_acl(name, acl_module_id, code, url, type, status, seq, remark, operator, operator_time, operator_ip)
+        insert into mms.sys_acl(name, acl_module_id, code, url, type, status, seq, remark, operator, operate_time, operate_ip)
         values (#{name}, #{aclModuleId}, #{code}, #{url}, #{type}, #{status}, #{seq}, #{remark}, #{operator}, #{operatorTime}, #{operatorIp})
     </insert>
 
@@ -79,10 +85,10 @@
                 operator = #{operator},
             </if>
             <if test="operatorTime != null">
-                operator_time = #{operatorTime},
+                operate_time = #{operatorTime},
             </if>
             <if test="operatorIp != null and operatorIp != ''">
-                operator_ip = #{operatorIp},
+                operate_ip = #{operatorIp},
             </if>
         </set>
         where id = #{id}
@@ -93,4 +99,14 @@
         delete from mms.sys_acl where id = #{id}
     </delete>
 
+    <select id="checkExit" resultMap="SysAclMap">
+        select
+          id, name, acl_module_id, code, url, type, status, seq, remark, operator, operate_time, operate_ip
+        from mms.sys_acl
+        where acl_module_id = #{aclModuleId} and name = #{name}
+        <if test="id != null">
+            and id != #{id}
+        </if>
+
+    </select>
 </mapper>

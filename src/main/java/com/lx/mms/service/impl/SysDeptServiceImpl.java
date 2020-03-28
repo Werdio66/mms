@@ -80,10 +80,7 @@ public class SysDeptServiceImpl implements SysDeptService {
     @Override
     public int update(DeptParam deptParam) {
         // 校验参数
-        BeanValidation.check(deptParam);
-
-//        SysDept before = sysDeptMapper.queryById(deptParam.getId());
-//        Preconditions.checkNotNull(before, "要更新的部门不存在");
+        checkDept(deptParam);
 
         // 通过构建者模式创建对象
         SysDept dept = buildDept(deptParam);
@@ -135,7 +132,7 @@ public class SysDeptServiceImpl implements SysDeptService {
      * @return
      */
     private boolean checkExist(Long parentId, String deptName, Long deptId) {
-        SysDept dept = sysDeptMapper.queryByParentIdAndDeptName(parentId, deptName);
+        SysDept dept = sysDeptMapper.checkExit(parentId, deptName, deptId);
         return dept != null;
     }
 

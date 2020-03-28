@@ -81,7 +81,7 @@ public class SysAclModuleServiceImpl implements SysAclModuleService {
     @Override
     public int update(AclModuleParam aclModuleParam) {
         // 校验参数
-        BeanValidation.check(aclModuleParam);
+        checkAclModel(aclModuleParam);
         SysAclModule aclModel = buildAclModel(aclModuleParam);
 
         aclModel.setId(aclModuleParam.getId());
@@ -138,13 +138,13 @@ public class SysAclModuleServiceImpl implements SysAclModuleService {
         // 校验参数
         BeanValidation.check(aclModuleParam);
         // 检查部门是否已经存在
-        if (checkExist(aclModuleParam.getParentId(), aclModuleParam.getName())){
+        if (checkExist(aclModuleParam.getParentId(), aclModuleParam.getName(), aclModuleParam.getId())){
             throw new ParamException("同一层级下存在相同的权限");
         }
     }
 
-    private boolean checkExist(Long parentId, String name) {
-        SysAclModule aclModule = sysAclModuleMapper.queryByParentIdAndName(parentId, name);
+    private boolean checkExist(Long parentId, String name, Long id) {
+        SysAclModule aclModule = sysAclModuleMapper.checkExit(parentId, name, id);
         return aclModule != null;
     }
 }

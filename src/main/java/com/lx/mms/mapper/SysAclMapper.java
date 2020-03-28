@@ -61,4 +61,9 @@ public interface SysAclMapper {
      */
     int deleteById(Long id);
 
+    SysAcl checkExit(@Param("aclModuleId") Long aclModuleId,
+                     @Param("name") String name,
+                     @Param("id") Long id);
+
+    List<SysAcl> querybyAclModelId(Long aclModuleId);
 }

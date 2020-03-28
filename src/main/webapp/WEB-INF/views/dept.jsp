@@ -188,8 +188,11 @@
             <a class="green user-edit" href="#" data-id="{{id}}">
                 <i class="ace-icon fa fa-pencil bigger-100"></i>
             </a>
-            <a class="red user-delete" href="#" data-id="{{id}}">
+            <a class="red user-acl" href="#" data-id="{{id}}">
                 <i class="ace-icon fa fa-flag bigger-100"></i>
+            </a>
+            <a class="red user-delete" href="#" data-id="{{id}}">
+                <i class="ace-icon fa fa-trash-o bigger-100"></i>
             </a>
         </div>
     </td>
@@ -497,7 +500,8 @@
                 });
                 $("#userList").html(rendered);
                 // 绑定用户的点击事件
-                bindUserClick();
+                console.log('绑定用户的点击事件的部门 id = ', deptId);
+                bindUserClick(deptId);
                 $.each(result.data.list, function(i, user) {
                     userMap[user.id] = user;
                 })
@@ -515,8 +519,11 @@
         }
 
         // 用户的点击事件
-        function bindUserClick() {
-
+        function bindUserClick(deptId) {
+            console.log("用户点击事件中的部门 id：", deptId);
+            function addShow () {
+                $("#deptSelectId").val(deptId);
+            }
             // 新增用户信息
             $(".user-add").click(function () {
                 console.log("新增用户信息：");
@@ -527,11 +534,13 @@
                         optionStr = "";
                         // 生成部门下拉列表
                         recursiveRenderDeptSelect(deptList, 1);
+                        addShow();
                         $("#userForm")[0].reset();
                         $("#deptSelectId").html(optionStr);
                     },
                     buttons : {
                         '取消' : function () {
+                            clearUserForm();
                             // 关闭模态框
                             $("#dialog-user-form").dialog("close");
                         },
@@ -545,7 +554,7 @@
                         }
                     }
                 });
-
+                clearUserForm();
             });
 
             function saveUser(data, deptId){
@@ -588,7 +597,7 @@
                     model : true,
                     title : '修改用户信息',
                     open : function () {
-                         optionStr = "";
+                        optionStr = "";
                         // 生成部门下拉列表
                         recursiveRenderDeptSelect(deptList, 1);
                         $("#userForm")[0].reset();

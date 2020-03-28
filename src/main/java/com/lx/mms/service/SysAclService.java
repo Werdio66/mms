@@ -1,6 +1,10 @@
 package com.lx.mms.service;
 
+import com.github.pagehelper.PageInfo;
 import com.lx.mms.entity.SysAcl;
+import com.lx.mms.entity.param.AclParam;
+import com.lx.mms.entity.param.UserParam;
+
 import java.util.List;
 
 /**
@@ -46,10 +50,10 @@ public interface SysAclService {
     /**
      * 修改数据
      *
-     * @param sysAcl 实例对象
+     * @param aclParam 实例对象
      * @return 实例对象
      */
-    SysAcl update(SysAcl sysAcl);
+    int update(AclParam aclParam);
 
     /**
      * 通过主键删除数据
@@ -59,4 +63,7 @@ public interface SysAclService {
      */
     boolean deleteById(Long id);
 
+    int save(AclParam aclParam);
+
+    PageInfo<SysAcl> queryByAclModuleId(Long aclModuleId);
 }

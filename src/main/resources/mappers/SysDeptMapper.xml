@@ -22,11 +22,14 @@
         where id = #{id}
     </select>
 
-    <select id="queryByParentIdAndDeptName" resultMap="SysDeptMap">
+    <select id="checkExit" resultMap="SysDeptMap">
         select
           id, name, parent_id, level, seq, remark, operator, operate_time, operate_ip
         from mms.sys_dept
         where parent_id = #{parentId} and name = #{deptName}
+        <if test="deptId != null">
+            and id != #{deptId}
+        </if>
     </select>
 
     <!--查询指定行数据-->

@@ -85,10 +85,13 @@
         delete from mms.sys_acl_module where id = #{id}
     </delete>
 
-    <select id="queryByParentIdAndName" resultMap="SysAclModuleMap">
+    <select id="checkExit" resultMap="SysAclModuleMap">
         select
           id, name, parent_id, level, seq, remark, operator, operate_time, operate_ip, status
         from mms.sys_acl_module
         where parent_id = #{parentId} and name = #{name}
+        <if test="id != null">
+            and id != #{id}
+        </if>
     </select>
 </mapper>

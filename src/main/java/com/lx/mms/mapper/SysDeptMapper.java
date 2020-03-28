@@ -61,6 +61,7 @@ public interface SysDeptMapper {
      */
     int deleteById(Long id);
 
-    SysDept queryByParentIdAndDeptName(@Param("parentId") Long parentId,
-                                       @Param("deptName") String deptName);
+    SysDept checkExit(@Param("parentId") Long parentId,
+                      @Param("deptName") String deptName,
+                      @Param("deptId") Long deptId);
 }
