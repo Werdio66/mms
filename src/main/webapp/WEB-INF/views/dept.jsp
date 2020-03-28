@@ -201,7 +201,7 @@
 
     // ===================================== 部门信息 ==============================
     // 获取操作部门的 id
-    var id;
+    var id = 0;
     function getId(data) {
         id = data;
         return data;
@@ -403,6 +403,11 @@
             var dept = deptMap[id];
             console.log('删除的部门对象：', dept);
 
+            if (dept.deptList.length > 0){
+                console.log("当前部门还有子部门");
+                showMessage('删除部门', '当前部门还有子部门，不能删除');
+                return false;
+            }
             if (confirm('确定删除部门[' + dept.name + ']吗?')) {
                 $.ajax({
                     url : '/sys/dept/delete.json',

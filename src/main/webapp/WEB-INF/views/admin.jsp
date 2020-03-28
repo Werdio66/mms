@@ -105,21 +105,21 @@
                         <b class="arrow"></b>
                     </li>
                     <li class="">
-                        <a class="popstyle" href="/sys/role/role.page" target="_blank">
+                        <a class="popstyle" href="/sys/role/index.page" target="_blank">
                             <i class="menu-icon fa fa-caret-right"></i>
                             角色管理
                         </a>
                         <b class="arrow"></b>
                     </li>
                     <li class="">
-                        <a class="popstyle" href="/sys/aclModule/acl.page" target="_blank">
+                        <a class="popstyle" href="/sys/aclModule/index.page" target="_blank">
                             <i class="menu-icon fa fa-caret-right"></i>
                             权限管理
                         </a>
                         <b class="arrow"></b>
                     </li>
                     <li class="">
-                        <a class="popstyle" href="/sys/log/log.page" target="_blank">
+                        <a class="popstyle" href="/sys/log/index.page" target="_blank">
                             <i class="menu-icon fa fa-caret-right"></i>
                             权限更新记录
                         </a>

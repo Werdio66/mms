@@ -1,6 +1,9 @@
 package com.lx.mms.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.io.Serializable;
@@ -11,7 +14,10 @@ import java.io.Serializable;
  * @author Werdio丶
  * @since 2020-03-14 09:56:17
  */
+@NoArgsConstructor
+@Builder
 @Data
+@AllArgsConstructor
 public class SysAclModule implements Serializable {
     private static final long serialVersionUID = 448919441767353409L;
     /**
@@ -25,7 +31,7 @@ public class SysAclModule implements Serializable {
     /**
     * 父级模块权限 id
     */
-    private Integer parentId;
+    private Long parentId;
     /**
     * 权限模块层级
     */

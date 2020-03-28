@@ -61,4 +61,5 @@ public interface SysAclModuleMapper {
      */
     int deleteById(Long id);
 
+    SysAclModule queryByParentIdAndName(@Param("parentId") Long parentId, @Param("name") String name);
 }

@@ -1,6 +1,8 @@
 package com.lx.mms.service;
 
 import com.lx.mms.entity.SysAclModule;
+import com.lx.mms.entity.param.AclModuleParam;
+
 import java.util.List;
 
 /**
@@ -46,10 +48,10 @@ public interface SysAclModuleService {
     /**
      * 修改数据
      *
-     * @param sysAclModule 实例对象
+     * @param aclModuleParam 实例对象
      * @return 实例对象
      */
-    SysAclModule update(SysAclModule sysAclModule);
+    int update(AclModuleParam aclModuleParam);
 
     /**
      * 通过主键删除数据
@@ -59,4 +61,5 @@ public interface SysAclModuleService {
      */
     boolean deleteById(Long id);
 
+    int save(AclModuleParam aclModuleParam);
 }

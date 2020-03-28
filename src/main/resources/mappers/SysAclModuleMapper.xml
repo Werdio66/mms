@@ -10,15 +10,15 @@
         <result property="seq" column="seq" jdbcType="INTEGER"/>
         <result property="remark" column="remark" jdbcType="VARCHAR"/>
         <result property="operator" column="operator" jdbcType="VARCHAR"/>
-        <result property="operatorTime" column="operator_time" jdbcType="TIMESTAMP"/>
-        <result property="opetatorIp" column="opetator_ip" jdbcType="VARCHAR"/>
+        <result property="operatorTime" column="operate_time" jdbcType="TIMESTAMP"/>
+        <result property="opetatorIp" column="operate_ip" jdbcType="VARCHAR"/>
         <result property="status" column="status" jdbcType="INTEGER"/>
     </resultMap>
 
     <!--查询单个-->
     <select id="queryById" resultMap="SysAclModuleMap">
         select
-          id, name, parent_id, level, seq, remark, operator, operator_time, opetator_ip, status
+          id, name, parent_id, level, seq, remark, operator, operate_time, operate_ip, status
         from mms.sys_acl_module
         where id = #{id}
     </select>
@@ -26,7 +26,7 @@
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="SysAclModuleMap">
         select
-          id, name, parent_id, level, seq, remark, operator, operator_time, opetator_ip, status
+          id, name, parent_id, level, seq, remark, operator, operate_time, operate_ip, status
         from mms.sys_acl_module
         limit #{offset}, #{limit}
     </select>
@@ -34,14 +34,14 @@
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="SysAclModuleMap">
         select
-          id, name, parent_id, level, seq, remark, operator, operator_time, opetator_ip, status
+          id, name, parent_id, level, seq, remark, operator, operate_time, operate_ip, status
         from mms.sys_acl_module
 
     </select>
 
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into mms.sys_acl_module(name, parent_id, level, seq, remark, operator, operator_time, opetator_ip, status)
+        insert into mms.sys_acl_module(name, parent_id, level, seq, remark, operator, operate_time, operate_ip, status)
         values (#{name}, #{parentId}, #{level}, #{seq}, #{remark}, #{operator}, #{operatorTime}, #{opetatorIp}, #{status})
     </insert>
 
@@ -68,10 +68,10 @@
                 operator = #{operator},
             </if>
             <if test="operatorTime != null">
-                operator_time = #{operatorTime},
+                operate_time = #{operatorTime},
             </if>
             <if test="opetatorIp != null and opetatorIp != ''">
-                opetator_ip = #{opetatorIp},
+                operate_ip = #{opetatorIp},
             </if>
             <if test="status != null">
                 status = #{status},
@@ -85,4 +85,10 @@
         delete from mms.sys_acl_module where id = #{id}
     </delete>
 
+    <select id="queryByParentIdAndName" resultMap="SysAclModuleMap">
+        select
+          id, name, parent_id, level, seq, remark, operator, operate_time, operate_ip, status
+        from mms.sys_acl_module
+        where parent_id = #{parentId} and name = #{name}
+    </select>
 </mapper>

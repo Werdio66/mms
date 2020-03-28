@@ -88,13 +88,13 @@
 <div id="dialog-aclModule-form" style="display: none;">
     <form id="aclModuleForm">
         <table class="table table-striped table-bordered table-hover dataTable no-footer" role="grid">
-            <tr>
+          <%--  <tr>
                 <td style="width: 80px;"><label for="parentId">上级模块</label></td>
                 <td>
                     <select id="parentId" name="parentId" data-placeholder="选择模块" style="width: 200px;"></select>
                     <input type="hidden" name="id" id="aclModuleId"/>
                 </td>
-            </tr>
+            </tr>--%>
             <tr>
                 <td><label for="aclModuleName">名称</label></td>
                 <td><input type="text" name="name" id="aclModuleName" value="" class="text ui-widget-content ui-corner-all"></td>
@@ -180,6 +180,10 @@
                 <i class="ace-icon fa fa-angle-double-down bigger-120 sub-aclModule"></i>
             </a>
             <span style="float:right;">
+                <a class="yellow aclModule-add" href="#" data-id="{{id}}" >
+                    <i class="ace-icon fa fa-plus-circle bigger-100"></i>
+                </a>
+                &nbsp;
                 <a class="green aclModule-edit" href="#" data-id="{{id}}" >
                     <i class="ace-icon fa fa-pencil bigger-100"></i>
                 </a>
@@ -198,7 +202,7 @@
 {{#aclList}}
 <tr role="row" class="acl-name odd" data-id="{{id}}"><!--even -->
     <td><a href="#" class="acl-edit" data-id="{{id}}">{{name}}</a></td>
-    <td>{{showAclModuleName}}</td>
+    <td>{{showaclModuleName}}</td>
     <td>{{showType}}</td>
     <td>{{url}}</td>
     <td>{{#bold}}{{showStatus}}{{/bold}}</td>
@@ -217,399 +221,592 @@
 {{/aclList}}
 </script>
 
-<script type="text/javascript">
-    $(function() {
-        var aclModuleList; // 存储树形权限模块列表
-        var aclModuleMap = {}; // 存储map格式权限模块信息
-        var aclMap = {}; // 存储map格式的权限点信息
-        var optionStr = "";
-        var lastClickAclModuleId = -1;
+<script type="application/javascript">
 
-        var aclModuleListTemplate = $('#aclModuleListTemplate').html();
-        Mustache.parse(aclModuleListTemplate);
-        var aclListTemplate = $('#aclListTemplate').html();
-        Mustache.parse(aclListTemplate);
+    // ===================================== 权限信息 ==============================
+   
+    // 存储树形权限列表
+    var aclModuleList;
+    // 存储map格式的权限信息
+    var aclModuleMap = {};
 
-        loadAclModuleTree();
+    // 取出权限树的 HTML，使用 mustache 渲染
+    var aclModuleListTemplate = $('#aclModuleListTemplate').html();
+    Mustache.parse(aclModuleListTemplate);
 
-        function loadAclModuleTree() {
-            $.ajax({
-                url: "/sys/aclModule/tree.json",
-                success : function (result) {
-                    if(result.ret) {
-                        aclModuleList = result.data;
-                        var rendered = Mustache.render(aclModuleListTemplate, {
-                            aclModuleList: result.data,
-                            "showDownAngle": function () {
-                                return function (text, render) {
-                                    return (this.aclModuleList && this.aclModuleList.length > 0) ? "" : "hidden";
-                                }
-                            },
-                            "displayClass": function () {
-                                return "";
+    loadAclModuleTree();
+
+    function loadAclModuleTree() {
+        console.log('加载权限树：');
+        $.ajax({
+            url : '/sys/aclModule/tree.json',
+            method : 'get',
+            data : {},
+            success : function (result) {
+                console.log("返回的对象：", result);
+                if (result.rec){
+                    aclModuleList = result.data;
+                    // 渲染列表
+                    var rendered = Mustache.render(aclModuleListTemplate, {
+                        aclModuleList: result.data,
+                        "showDownAngle": function () {
+                            return function (text, render) {
+                                return (this.aclModuleList && this.aclModuleList.length > 0) ? "" : "hidden";
                             }
-                        });
-                        $("#aclModuleList").html(rendered);
-                        recursiveRenderAclModule(result.data);
-                        bindAclModuleClick();
-                    } else {
-                        showMessage("加载权限模块", result.msg, false);
-                    }
+                        },
+                        "displayClass": function () {
+                            return "";
+                        }
+                    });
+                    // console.log(rendered);
+                    $("#aclModuleList").html(rendered);
+                    // 递归处理权限树
+                    recursiveRenderAclModule(aclModuleList);
+                    console.log("所有的权限信息：", aclModuleMap);
+                    // 绑定权限点击的事件
+                    bindaclModuleClick();
+                }else {
+                    showMessage("加载权限树", result.msg, false);
                 }
-            })
-        }
-
-        $(".aclModule-add").click(function () {
-            $("#dialog-aclModule-form").dialog({
-                model: true,
-                title: "新增权限模块",
-                open: function(event, ui) {
-                    $(".ui-dialog-titlebar-close", $(this).parent()).hide();
-                    optionStr = "<option value=\"0\">-</option>";
-                    recursiveRenderAclModuleSelect(aclModuleList, 1);
-                    $("#aclModuleForm")[0].reset();
-                    $("#parentId").html(optionStr);
-                },
-                buttons : {
-                    "添加": function(e) {
-                        e.preventDefault();
-                        updateAclModule(true, function (data) {
-                            $("#dialog-aclModule-form").dialog("close");
-                        }, function (data) {
-                            showMessage("新增权限模块", data.msg, false);
-                        })
-                    },
-                    "取消": function () {
-                        $("#dialog-aclModule-form").dialog("close");
-                    }
-                }
-            });
+            }
         });
-        function updateAclModule(isCreate, successCallback, failCallback) {
-            $.ajax({
-                url: isCreate ? "/sys/aclModule/save.json" : "/sys/aclModule/update.json",
-                data: $("#aclModuleForm").serializeArray(),
-                type: 'POST',
-                success: function(result) {
-                    if (result.ret) {
-                        loadAclModuleTree();
-                        if (successCallback) {
-                            successCallback(result);
-                        }
-                    } else {
-                        if (failCallback) {
-                            failCallback(result);
-                        }
-                    }
-                }
-            })
-        }
+    }
 
-        function updateAcl(isCreate, successCallback, failCallback) {
-            $.ajax({
-                url: isCreate ? "/sys/acl/save.json" : "/sys/acl/update.json",
-                data: $("#aclForm").serializeArray(),
-                type: 'POST',
-                success: function(result) {
-                    if (result.ret) {
-                        loadAclList(lastClickAclModuleId);
-                        if (successCallback) {
-                            successCallback(result);
-                        }
-                    } else {
-                        if (failCallback) {
-                            failCallback(result);
-                        }
-                    }
-                }
-            })
-        }
-
-        function recursiveRenderAclModuleSelect(aclModuleList, level) {
-            level = level | 0;
-            if (aclModuleList && aclModuleList.length > 0) {
-                $(aclModuleList).each(function (i, aclModule) {
-                    aclModuleMap[aclModule.id] = aclModule;
-                    var blank = "";
-                    if (level > 1) {
-                        for(var j = 3; j <= level; j++) {
-                            blank += "..";
-                        }
-                        blank += "∟";
-                    }
-                    optionStr += Mustache.render("<option value='{{id}}'>{{name}}</option>", {id: aclModule.id, name: blank + aclModule.name});
-                    if (aclModule.aclModuleList && aclModule.aclModuleList.length > 0) {
-                        recursiveRenderAclModuleSelect(aclModule.aclModuleList, level + 1);
-                    }
-                });
-            }
-        }
-
-        function recursiveRenderAclModule(aclModuleList) {
-            if (aclModuleList && aclModuleList.length > 0) {
-                $(aclModuleList).each(function (i, aclModule) {
-                    aclModuleMap[aclModule.id] = aclModule;
-                    if (aclModule.aclModuleList && aclModule.aclModuleList.length > 0) {
-                        var rendered = Mustache.render(aclModuleListTemplate, {
-                            aclModuleList: aclModule.aclModuleList,
-                            "showDownAngle": function () {
-                                return function (text, render) {
-                                    return (this.aclModuleList && this.aclModuleList.length > 0) ? "" : "hidden";
-                                }
-                            },
-                            "displayClass": function () {
-                                return "hidden";
+    function recursiveRenderAclModule(aclModuleList) {
+        if (aclModuleList && aclModuleList.length > 0) {
+            $(aclModuleList).each(function (i, aclModule) {
+                aclModuleMap[aclModule.id] = aclModule;
+                if (aclModule.aclModuleList && aclModule.aclModuleList.length > 0) {
+                    var rendered = Mustache.render(aclModuleListTemplate, {
+                        aclModuleList: aclModule.aclModuleList,
+                        "showDownAngle": function () {
+                            return function (text, render) {
+                                return (this.aclModuleList && this.aclModuleList.length > 0) ? "" : "hidden";
                             }
-                        });
-                        $("#aclModule_" + aclModule.id).append(rendered);
-                        recursiveRenderAclModule(aclModule.aclModuleList);
-                    }
-                })
-            }
-        }
-
-        function bindAclModuleClick() {
-            $(".sub-aclModule").click(function (e) {
-               e.preventDefault();
-               e.stopPropagation();
-               $(this).parent().parent().parent().children().children(".aclModule-name").toggleClass("hidden");
-               if($(this).is(".fa-angle-double-down")) {
-                   $(this).removeClass("fa-angle-double-down").addClass("fa-angle-double-up");
-               } else{
-                   $(this).removeClass("fa-angle-double-up").addClass("fa-angle-double-down");
-               }
-            });
-
-            $(".aclModule-name").click(function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                var aclModuleId = $(this).attr("data-id");
-                handleAclModuleSelected(aclModuleId);
-            });
-
-            $(".aclModule-delete").click(function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-                var aclModuleId = $(this).attr("data-id");
-                var aclModuleName = $(this).attr("data-name");
-                if (confirm("确定要删除权限模块[" + aclModuleName + "]吗?")) {
-                    $.ajax({
-                        url: "/sys/aclModule/delete.json",
-                        data: {
-                            id: aclModuleId
                         },
-                        success: function (result) {
-                            if (result.ret) {
-                                showMessage("删除权限模块[" + aclModuleName + "]", "操作成功", true);
-                                loadAclModuleTree();
-                            } else {
-                                showMessage("删除权限模块[" + aclModuleName + "]", result.msg, false);
-                            }
+                        "displayClass": function () {
+                            return "hidden";
                         }
                     });
+                    $("#aclModule_" + aclModule.id).append(rendered);
+                    recursiveRenderAclModule(aclModule.aclModuleList);
                 }
-            });
+            })
+        }
+    }
 
-            $(".aclModule-edit").click(function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                var aclModuleId = $(this).attr("data-id");
-                $("#dialog-aclModule-form").dialog({
-                    model: true,
-                    title: "编辑权限模块",
-                    open: function(event, ui) {
-                        $(".ui-dialog-titlebar-close", $(this).parent()).hide();
-                        optionStr = "<option value=\"0\">-</option>";
-                        recursiveRenderAclModuleSelect(aclModuleList, 1);
-                        $("#aclModuleForm")[0].reset();
-                        $("#parentId").html(optionStr);
-                        $("#aclModuleId").val(aclModuleId);
-                        var targetAclModule = aclModuleMap[aclModuleId];
-                        if (targetAclModule) {
-                            $("#parentId").val(targetAclModule.parentId);
-                            $("#aclModuleName").val(targetAclModule.name);
-                            $("#aclModuleSeq").val(targetAclModule.seq);
-                            $("#aclModuleRemark").val(targetAclModule.remark);
-                            $("#aclModuleStatus").val(targetAclModule.status);
-                        }
+    // 绑定权限点击的事件
+    function bindaclModuleClick() {
+
+        $(".sub-aclModule").click(function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $(this).parent().parent().parent().children().children(".aclModule-name").toggleClass("hidden");
+            if($(this).is(".fa-angle-double-down")) {
+                $(this).removeClass("fa-angle-double-down").addClass("fa-angle-double-up");
+            } else{
+                $(this).removeClass("fa-angle-double-up").addClass("fa-angle-double-down");
+            }
+        });
+
+        // 新增权限
+        $('.aclModule-add').click(function () {
+            console.log("新增权限：");
+            var id = $(this).data("id") || 0;
+            console.log("新增权限的父 id = ", id);
+            $('#dialog-aclModule-form').dialog({
+                model : true,
+                title : '新增权限',
+                buttons : {
+                    '取消' : function () {
+                        // 关闭模态框
+                        $("#dialog-aclModule-form").dialog("close");
                     },
-                    buttons : {
-                        "更新": function(e) {
-                            e.preventDefault();
-                            updateAclModule(false, function (data) {
-                                $("#dialog-aclModule-form").dialog("close");
-                            }, function (data) {
-                                showMessage("编辑权限模块", data.msg, false);
-                            })
-                        },
-                        "取消": function () {
-                            $("#dialog-aclModule-form").dialog("close");
-                        }
+                     '保存' : function () {
+                        var data = $("#aclModuleForm").serializeArray();
+                        data.push({'name' : 'parentId', 'value' : id});
+                        console.log("添加权限的参数：", data);
+                        // 发送到后台保存部门
+                        saveAclModule(data);
                     }
-                });
+                }
             });
-        }
 
-        function handleAclModuleSelected(aclModuleId) {
-            if (lastClickAclModuleId != -1) {
-                var lastAclModule = $("#aclModule_" + lastClickAclModuleId + " .dd2-content:first");
-                lastAclModule.removeClass("btn-yellow");
-                lastAclModule.removeClass("no-hover");
-            }
-            var currentAclModule = $("#aclModule_" + aclModuleId + " .dd2-content:first");
-            currentAclModule.addClass("btn-yellow");
-            currentAclModule.addClass("no-hover");
-            lastClickAclModuleId = aclModuleId;
-            loadAclList(aclModuleId);
-        }
-
-        function loadAclList(aclModuleId) {
-            var pageSize = $("#pageSize").val();
-            var url = "/sys/acl/page.json?aclModuleId=" + aclModuleId;
-            var pageNo = $("#aclPage .pageNo").val() || 1;
-            $.ajax({
-                url : url,
-                data: {
-                    pageSize: pageSize,
-                    pageNo: pageNo
-                },
-                success: function (result) {
-                    renderAclListAndPage(result, url);
-                }
-            })
-        }
-
-        function renderAclListAndPage(result, url) {
-            if(result.ret) {
-                if (result.data.total > 0){
-                    var rendered = Mustache.render(aclListTemplate, {
-                        aclList: result.data.data,
-                        "showAclModuleName": function () {
-                            return aclModuleMap[this.aclModuleId].name;
-                        },
-                        "showStatus": function() {
-                            return this.status == 1 ? "有效": "无效";
-                        },
-                        "showType": function() {
-                            return this.type == 1 ? "菜单" : (this.type == 2 ? "按钮" : "其他");
-                        },
-                        "bold": function() {
-                            return function(text, render) {
-                                var status = render(text);
-                                if (status == '有效') {
-                                    return "<span class='label label-sm label-success'>有效</span>";
-                                } else if(status == '无效') {
-                                    return "<span class='label label-sm label-warning'>无效</span>";
-                                } else {
-                                    return "<span class='label'>删除</span>";
-                                }
-                            }
-                        }
-                    });
-                    $("#aclList").html(rendered);
-                    bindAclClick();
-                    $.each(result.data.data, function(i, acl) {
-                        aclMap[acl.id] = acl;
-                    })
-                } else {
-                    $("#aclList").html('');
-                }
-                var pageSize = $("#pageSize").val();
-                var pageNo = $("#aclPage .pageNo").val() || 1;
-                renderPage(url, result.data.total, pageNo, pageSize, result.data.total > 0 ? result.data.data.length : 0, "aclPage", renderAclListAndPage);
-            } else {
-                showMessage("获取权限点列表", result.msg, false);
-            }
-        }
-
-        function bindAclClick() {
-            $(".acl-role").click(function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-                var aclId = $(this).attr("data-id");
+            function saveAclModule(data){
+                console.log("保存权限：");
                 $.ajax({
-                    url: "/sys/acl/acls.json",
-                    data: {
-                        aclId: aclId
-                    },
-                    success: function(result) {
-                        if (result.ret) {
-                            console.log(result)
-                        } else {
-                            showMessage("获取权限点分配的用户和角色", result.msg, false);
-                        }
-                    }
-                })
-            });
-            $(".acl-edit").click(function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                var aclId = $(this).attr("data-id");
-                $("#dialog-acl-form").dialog({
-                    model: true,
-                    title: "编辑权限",
-                    open: function(event, ui) {
-                        $(".ui-dialog-titlebar-close", $(this).parent()).hide();
-                        optionStr = "";
-                        recursiveRenderAclModuleSelect(aclModuleList, 1);
-                        $("#aclForm")[0].reset();
-                        $("#aclModuleSelectId").html(optionStr);
-                        var targetAcl = aclMap[aclId];
-                        if (targetAcl) {
-                            $("#aclId").val(aclId);
-                            $("#aclModuleSelectId").val(targetAcl.aclModuleId);
-                            $("#aclStatus").val(targetAcl.status);
-                            $("#aclType").val(targetAcl.type);
-                            $("#aclName").val(targetAcl.name);
-                            $("#aclUrl").val(targetAcl.url);
-                            $("#aclSeq").val(targetAcl.seq);
-                            $("#aclRemark").val(targetAcl.remark);
-                        }
-                    },
-                    buttons : {
-                        "更新": function(e) {
-                            e.preventDefault();
-                            updateAcl(false, function (data) {
-                                $("#dialog-acl-form").dialog("close");
-                            }, function (data) {
-                                showMessage("编辑权限", data.msg, false);
-                            })
-                        },
-                        "取消": function () {
-                            $("#dialog-acl-form").dialog("close");
+                    url : '/sys/aclModule/save.json',
+                    method : 'post',
+                    data : data,
+                    success : function (result) {
+                        console.log('返回结果：', result);
+                        if (result.rec){
+                            showMessage('新增权限', '操作成功', true);
+                            // 新增权限后，重新刷新权限树
+                            loadAclModuleTree();
+                            // 关闭模态框
+                            $("#dialog-aclModule-form").dialog("close");
+                            // 将模态框中的数据清除
+                            clearData();
+                            showMessage("新增权限", '操作成功', true);
+                        }else {
+                            showMessage("新增权限", result.msg, false);
                         }
                     }
                 });
-            })
-        }
+            }
 
-        $(".acl-add").click(function() {
-            $("#dialog-acl-form").dialog({
-                model: true,
-                title: "新增权限",
-                open: function(event, ui) {
-                    $(".ui-dialog-titlebar-close", $(this).parent()).hide();
-                    optionStr = "";
-                    recursiveRenderAclModuleSelect(aclModuleList, 1);
-                    $("#aclForm")[0].reset();
-                    $("#aclModuleSelectId").html(optionStr);
+        });
+
+        // 更新权限
+        $('.aclModule-edit').click(function () {
+            console.log('修改权限信息：');
+            // 获取当前修改的权限信息
+            var id = $(this).data("id");
+            var aclModule = aclModuleMap[id];
+            console.log('修改前的对象信息：', aclModule);
+            $("#dialog-aclModule-form").dialog({
+                model : true,
+                title : '修改权限',
+                open : function(event, ui){
+                    $("#aclModuleStatus").val(aclModule.status);
+                    $("#aclModuleName").val(aclModule.name);
+                    $("#aclModuleSeq").val(aclModule.seq);
+                    $("#aclModuleRemark").val(aclModule.remark);
                 },
                 buttons : {
-                    "添加": function(e) {
-                        e.preventDefault();
-                        updateAcl(true, function (data) {
-                            $("#dialog-acl-form").dialog("close");
-                        }, function (data) {
-                            showMessage("新增权限", data.msg, false);
-                        })
+                    '取消' : function () {
+                        // 关闭模态框
+                        $("#dialog-aclModule-form").dialog("close");
                     },
-                    "取消": function () {
-                        $("#dialog-acl-form").dialog("close");
+                    '修改' : function () {
+                        var data = $("#aclModuleForm").serializeArray();
+                        data.push({'name' : 'id', 'value' : id});
+                        data.push({'name' : 'parentId', 'value' : aclModule.parentId});
+                        console.log("修改后的部门信息：", data);
+                        // 发送到后台保存部门
+                        updateAclModule(data);
                     }
                 }
             });
+
+
+            function updateAclModule(data) {
+                console.log('修改权限信息：');
+                var oldName;
+                var oldSeq;
+                var oldRemark;
+                var oldStatus;
+                $.each(data, function (i) {
+                    if (data[i].name === 'name'){
+                        oldName = data[i].value;
+                    }
+                    if (data[i].name === 'seq'){
+                        oldSeq = data[i].value;
+                    }
+                    if (data[i].name === 'remark'){
+                        oldRemark = data[i].value;
+                    }
+                     if (data[i].name === 'status'){
+                        oldStatus = data[i].value;
+                    }
+                });
+                console.log('name = ', aclModule.name , '   ', oldName);
+                console.log('seq = ', aclModule.seq , '   ', oldSeq);
+                console.log('remark = ', aclModule.remark , '   ', oldRemark);
+                console.log('status = ', aclModule.status , '   ', oldStatus);
+                $.ajax({
+                    url : '/sys/aclModule/update.json',
+                    method : 'post',
+                    data : data,
+                    beforeSend : function () {
+                        if (aclModule.status == oldStatus && aclModule.name == oldName && aclModule.seq == oldSeq && aclModule.remark == oldRemark) {
+                            showMessage('更新权限信息', '请确认权限信息是否修改', false);
+                            console.log('权限信息未修改');
+                            return false;
+                        } else {
+                            console.log('权限信息已修改');
+                            return true;
+                        }
+                    },
+                    success : function (result) {
+                        console.log(result);
+                        if (result.rec){
+                            console.log('修改成功');
+                            // 关闭模态框
+                            $("#dialog-aclModule-form").dialog("close");
+                            loadAclModuleTree();
+                            clearData();
+                            showMessage('修改权限', '操作成功', true);
+                        }else {
+                            showMessage('修改权限', result.msg, false);
+                        }
+                    }
+                })
+            }
+        });
+
+        // 删除权限
+        $(".aclModule-delete").click(function () {
+            console.log('删除权限');
+            var id = $(this).data("id");
+            var aclModule = aclModuleMap[id];
+            console.log('删除的权限对象：', aclModule);
+
+            if (aclModule.aclModuleList.length > 0){
+                console.log("当前权限还有子权限");
+                showMessage('删除权限', '当前权限还有子权限，不能删除');
+                return false;
+            }
+
+            if (confirm('确定删除权限[' + aclModule.name + ']吗?')) {
+                $.ajax({
+                    url : '/sys/aclModule/delete.json',
+                    method : 'get',
+                    data : {
+                        id : id
+                    },
+                    success : function (result) {
+                        console.log(result);
+                        if (result.rec){
+                            loadAclModuleTree();
+                            showMessage('删除权限', '操作成功', true);
+                        }else {
+                            showMessage('删除权限', '操作失败 ', result.msg, false);
+                        }
+                    }
+                })
+            }
+        });
+
+        function clearData() {
+            $("#aclModuleName").val('');
+            $("#aclModuleSeq").val('');
+            $("#aclModuleRemark").val('');
+            $("#aclModuleStatus").val('');
+        }
+
+    }
+
+
+
+    // ==============================用户信息==================================
+    // 存储用户信息
+    var userList;
+    var userMap = {};
+    var userListTemplate = $('#userListTemplate').html();
+    Mustache.parse(userListTemplate);
+
+    function loadUserList(deptId) {
+        console.log('加载用户信息：');
+        var pageSize = $("#pageSize").val();
+        console.log("每页数量：", pageSize);
+        var pageNo = $("#userPage .pageNo").val() || 1;
+        console.log("当前页：", pageNo);
+        var json = {
+          pageNum : pageNo,
+          pageSize : pageSize
+        };
+        var url = '/sys/user/queryByDeptId.json?deptId=' + deptId;
+        $.ajax({
+            url : url,
+            method : 'get',
+            data : json,
+            success : function (result) {
+                console.log('返回的结果：', result);
+                renderUserListAndPage(result, url, deptId);
+            }
         })
-    })
+    }
+
+
+    function renderUserListAndPage(result, url, deptId) {
+        if (result.rec) {
+            if (result.data.total > 0){
+                console.log("所有的用户：", result.data.list);
+                var rendered = Mustache.render(userListTemplate, {
+                    userList: result.data.list,
+                    "showDeptName": function() {
+                        // console.log("部门名称：", aclModuleMap[this.deptId].name);
+                        return aclModuleMap[this.deptId].name;
+                    },
+                    "showStatus": function() {
+                        // console.log("状态：", this.status);
+                        return this.status == 1 ? '有效' : (this.status == 0 ? '无效' : '删除');
+                    },
+                    "bold": function() {
+                        // console.log("blod 事件：");
+                        return function(text, render) {
+                            var status = render(text);
+                            if (status == '有效') {
+                                return "<span class='label label-sm label-success'>有效</span>";
+                            } else if(status == '无效') {
+                                return "<span class='label label-sm label-warning'>无效</span>";
+                            } else {
+                                return "<span class='label'>删除</span>";
+                            }
+                        }
+                    }
+                });
+                $("#userList").html(rendered);
+                // 绑定用户的点击事件
+                bindUserClick();
+                $.each(result.data.list, function(i, user) {
+                    userMap[user.id] = user;
+                })
+                console.log("用户 map ：", userMap);
+            } else {
+                $("#userList").html('');
+            }
+            var pageSize = $("#pageSize").val();
+            var pageNo = $("#userPage .pageNo").val() || 1;
+            console.log("分页时的部门 id ：", deptId);
+
+            renderPage(url, result.data.total, pageNo, pageSize, result.data.total > 0 ? result.data.list.length : 0, "userPage", renderUserListAndPage);
+        } else {
+            showMessage("获取部门下用户列表", result.msg, false);
+        }
+
+        // 用户的点击事件
+        function bindUserClick() {
+
+            // 新增用户信息
+            $(".user-add").click(function () {
+                console.log("新增用户信息：");
+                $('#dialog-user-form').dialog({
+                    model : true,
+                    title : '新增用户信息',
+                    open : function () {
+                        optionStr = "";
+                        // 生成部门下拉列表
+                        recursiveRenderDeptSelect(aclModule, 1);
+                        $("#userForm")[0].reset();
+                        $("#deptSelectId").html(optionStr);
+                    },
+                    buttons : {
+                        '取消' : function () {
+                            // 关闭模态框
+                            $("#dialog-user-form").dialog("close");
+                        },
+                        '保存' : function () {
+                            var data = $("#userForm").serializeArray();
+                            var deptId = $("#deptSelectId").val();
+                            console.log("添加用户的部门 id = ", deptId);
+                            console.log("添加部门的参数：", data);
+                            // 发送到后台保存部门
+                            saveUser(data, deptId);
+                        }
+                    }
+                });
+
+            });
+
+            function saveUser(data, deptId){
+
+                console.log("保存用户：");
+                $.ajax({
+                    url : '/sys/user/save.json',
+                    method : 'post',
+                    data : data,
+                    success : function (result) {
+                        console.log("返回结果：", result);
+                        if (result.rec){
+                            console.log("保存用户成功!");
+                            // 加载用户列表
+                            loadUserList(deptId);
+                            // 清除表单中的数据
+                            clearUserForm();
+                            // 关闭模态框
+                            $("#dialog-user-form").dialog("close");
+                            showMessage('保存用户', "操作成功", true);
+                        }else {
+                            showMessage("保存用户", result.msg, false);
+                        }
+                    }
+                })
+            }
+
+            // 修改用户信息
+            $(".user-edit").click(function () {
+                console.log("修改用户信息：");
+
+                var userId = $(this).data("id");
+                console.log("修改用户 id = ", userId);
+                // 部门 id
+                var deptId;
+                var user = userMap[userId];
+                console.log("修改前的用户信息：", user);
+
+                $('#dialog-user-form').dialog({
+                    model : true,
+                    title : '修改用户信息',
+                    open : function () {
+                         optionStr = "";
+                        // 生成部门下拉列表
+                        recursiveRenderDeptSelect(aclModule, 1);
+                        $("#userForm")[0].reset();
+                        $("#deptSelectId").html(optionStr);
+                        // 回写
+                        showUserForm(user);
+                    },
+                    buttons : {
+                        '取消' : function () {
+                            // 关闭模态框
+                            $("#dialog-user-form").dialog("close");
+                        },
+                        '保存' : function () {
+                            var data = $("#userForm").serializeArray();
+                            console.log("修改后的用户信息：", data);
+
+                            if(checkIsChange(user, data)){
+                                // 发送到后台保存用户
+                                updateUser(data, deptId);
+                            }
+
+                        }
+                    }
+                });
+                // 修改用户信息
+                function updateUser(data, deptId) {
+                    console.log("修改用户：");
+                    $.ajax({
+                        url : '/sys/user/update.json',
+                        method : 'post',
+                        data : data,
+                        success : function (result) {
+                            console.log('修改后，后端返回的结果 : ', result);
+                            if (result.rec){
+                                console.log("修改成功");
+                                // 加载用户列表
+                                loadUserList(deptId);
+                                // 清除表单中的数据
+                                clearUserForm();
+                                // 关闭模态框
+                                $("#dialog-user-form").dialog("close");
+                                showMessage('修改用户', "操作成功", true);
+                            }else {
+                                showMessage('修改用户', result.msg, false);
+                            }
+
+                        }
+                    })
+                }
+                function checkIsChange(oldUser, newUser) {
+                    var deptSelectId;
+                    var userName;
+                    var userMail;
+                    var userTelephone;
+                    var userStatus;
+                    var userRemark;
+
+                    $.each(newUser, function (i) {
+                        var temp = newUser[i];
+                        if (temp.name === 'username'){
+                            userName = temp.value;
+                        }
+                        if (temp.name === 'deptId'){
+                            deptSelectId = temp.value;
+                        }
+                        if (temp.name === 'mail'){
+                            userMail = temp.value;
+                        }
+                        if (temp.name === 'telephone'){
+                            userTelephone = temp.value;
+                        }
+                        if (temp.name === 'status'){
+                            userStatus = temp.value;
+                        }
+                        if (temp.name === 'remark'){
+                            userRemark = temp.value;
+                        }
+                    });
+
+                    deptId = deptSelectId;
+                    if (oldUser.deptId == deptSelectId && oldUser.username == userName && oldUser.mall == userMail
+                    && oldUser.telephone == userTelephone && oldUser.status == userStatus && oldUser.remark == userRemark){
+                        console.log("用户信息没有修改");
+                        showMessage('修改用户', '请确认用户信息是否已经修改', false);
+                        return false;
+                    }else {
+                        console.log("用户信息已经修改");
+                        return true;
+                    }
+                }
+
+            });
+            
+            // 删除用户
+            $(".user-delete").click(function () {
+                var userId = $(this).data("id");
+                var user = userMap[userId];
+                console.log("删除用户：", user);
+                console.log('删除的用户对象 id：', userId);
+                var deptId = user.deptId;
+                if (confirm('确定删除用户[' + user.username + ']吗?')) {
+                    $.ajax({
+                        url : '/sys/user/delete.json',
+                        method : 'get',
+                        data : {
+                            id : userId
+                        },
+                        success : function (result) {
+                            console.log(result);
+                            if (result.rec){
+                                console.log("删除成功");
+                                loadUserList(deptId);
+                                showMessage('删除用户', '操作成功', true);
+                            }else {
+                                showMessage('删除用户', '操作失败', false);
+                            }
+                        }
+                    })
+                }
+            });
+
+            function showUserForm(user) {
+                $("#deptSelectId").val(user.deptId);
+                $("#userName").val(user.username);
+                $("#userMail").val(user.mall);
+                $("#userTelephone").val(user.telephone);
+                $("#userStatus").val(user.status);
+                $("#userRemark").val(user.remark);
+                $("#userId").val(user.id);
+            }
+            function clearUserForm() {
+                $("#deptSelectId").val('');
+                $("#userName").val('');
+                $("#userMail").val('');
+                $("#userTelephone").val('');
+                $("#userStatus").val('');
+                $("#userRemark").val('');
+                $("#userId").val('');
+            }
+
+            // 生成部门下拉列表
+            function recursiveRenderDeptSelect(aclModule, level) {
+                level = level | 0;
+                if (aclModule && aclModule.length > 0) {
+                    $(aclModule).each(function (i, dept) {
+                        aclModuleMap[dept.id] = dept;
+                        var blank = "";
+                        if (level > 1) {
+                            for(var j = 3; j <= level; j++) {
+                                blank += "..";
+                            }
+                            blank += "∟";
+                        }
+                        optionStr += Mustache.render("<option value='{{id}}'>{{name}}</option>", {id: dept.id, name: blank + dept.name});
+                        if (dept.aclModule && dept.aclModule.length > 0) {
+                            recursiveRenderDeptSelect(dept.aclModule, level + 1);
+                        }
+                    });
+                }
+            }
+
+        }
+    }
+
+
 </script>
 
 </body>
