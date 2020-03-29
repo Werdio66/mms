@@ -61,4 +61,5 @@ public interface SysRoleMapper {
      */
     int deleteById(Long id);
 
+    SysRole checkExit(@Param("name") String name, @Param("id") Long id);
 }

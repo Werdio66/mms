@@ -1,6 +1,8 @@
 package com.lx.mms.service;
 
 import com.lx.mms.entity.SysRole;
+import com.lx.mms.entity.param.RoleParam;
+
 import java.util.List;
 
 /**
@@ -46,10 +48,10 @@ public interface SysRoleService {
     /**
      * 修改数据
      *
-     * @param sysRole 实例对象
+     * @param roleParam 实例对象
      * @return 实例对象
      */
-    SysRole update(SysRole sysRole);
+    int update(RoleParam roleParam);
 
     /**
      * 通过主键删除数据
@@ -59,4 +61,5 @@ public interface SysRoleService {
      */
     boolean deleteById(Long id);
 
+    int save(RoleParam roleParam);
 }
