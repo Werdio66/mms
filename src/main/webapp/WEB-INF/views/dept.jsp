@@ -44,7 +44,7 @@
                             <div class="dataTables_length" id="dynamic-table_length"><label>
                                 展示
                                 <select id="pageSize" name="dynamic-table_length" aria-controls="dynamic-table" class="form-control input-sm">
-                                    <option value="5">5</option>
+                                  <%--  <option value="5">5</option>--%>
                                     <option value="10">10</option>
                                     <option value="25">25</option>
                                     <option value="50">50</option>
@@ -152,9 +152,13 @@
 <script id="deptListTemplate" type="x-tmpl-mustache">
 <ol class="dd-list">
     {{#deptList}}
-        <li class="dept-name dd-item dd2-item" href="javascript:void(0)" id="dept_{{id}}" data-id="{{id}}">
+        <li class="dept-name dd-item dd2-item {{displayClass}}" href="javascript:void(0)" id="dept_{{id}}" data-id="{{id}}">
             <div  class="dd2-content" style="cursor:pointer;">
               {{name}}
+               &nbsp;
+            <a class="green {{#showDownAngle}}{{/showDownAngle}}" href="#" data-id="{{id}}" >
+                <i class="ace-icon fa fa-angle-double-down bigger-120 sub-deptList"></i>
+            </a>
             <span style="float:right;">
                 <a class="yellow dept-add" onclick="getId({{id}});" data-id="{{id}}" >
                     <i class="ace-icon fa fa-plus-circle bigger-100"></i>
@@ -232,7 +236,17 @@
                 if (result.rec){
                     deptList = result.data;
                     // 渲染列表
-                    var rendered = Mustache.render(deptListTemplate, {deptList: result.data});
+                    var rendered = Mustache.render(deptListTemplate, {
+                        deptList: result.data,
+                        "showDownAngle": function () {
+                            return function (text, render) {
+                                return (this.deptList && this.deptList.length > 0) ? "" : "hidden";
+                            }
+                        },
+                        "displayClass": function () {
+                            return "";
+                        }
+                    });
                     // console.log(rendered);
                     $("#deptList").html(rendered);
                     // 递归处理部门树
@@ -266,7 +280,17 @@
             $(deptList).each(function (i, dept) {
                 deptMap[dept.id] = dept;
                 if (dept.deptList.length > 0) {
-                    var rendered = Mustache.render(deptListTemplate, {deptList: dept.deptList});
+                    var rendered = Mustache.render(deptListTemplate, {
+                        deptList: dept.deptList,
+                        "showDownAngle": function () {
+                            return function (text, render) {
+                                return (this.deptList && this.deptList.length > 0) ? "" : "hidden";
+                            }
+                        },
+                        "displayClass": function () {
+                            return "hidden";
+                        }
+                    });
                     $("#dept_" + dept.id).append(rendered);
                     recursiveRenderDept(dept.deptList);
                 }
@@ -276,6 +300,17 @@
 
     // 绑定部门点击的事件
     function bindDeptClick() {
+
+        $(".sub-deptList").click(function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $(this).parent().parent().parent().children().children(".dept-name").toggleClass("hidden");
+            if($(this).is(".fa-angle-double-down")) {
+                $(this).removeClass("fa-angle-double-down").addClass("fa-angle-double-up");
+            } else{
+                $(this).removeClass("fa-angle-double-up").addClass("fa-angle-double-down");
+            }
+        });
 
         $(".dept-name").click(function (e) {
             console.log("点击部门名称：");
@@ -527,7 +562,7 @@
             var pageNo = $("#userPage .pageNo").val() || 1;
             console.log("分页时的部门 id ：", deptId);
 
-            renderPage(url, result.data.total, pageNo, pageSize, result.data.total > 0 ? result.data.list.length : 0, "userPage", renderUserListAndPage);
+            renderPage(result.data, url, "userPage", renderUserListAndPage);
         } else {
             showMessage("获取部门下用户列表", result.msg, false);
         }

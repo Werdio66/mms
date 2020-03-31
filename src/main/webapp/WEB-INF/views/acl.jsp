@@ -80,6 +80,7 @@
                         <tbody id="aclList"></tbody>
                     </table>
                     <div class="row" id="aclPage">
+
                     </div>
                 </div>
             </div>
@@ -593,7 +594,7 @@
             var pageNo = $("#aclPage .pageNo").val() || 1;
             console.log("分页时的权限点 id ：", aclModuleId);
 
-            renderPage(url, result.data.total, pageNo, pageSize, result.data.total > 0 ? result.data.list.length : 0, "aclPage", renderAclListAndPage);
+            renderPage(result.data, url, "aclPage", renderAclListAndPage);
         } else {
             showMessage("获取权限模块下权限列表", result.msg, false);
         }

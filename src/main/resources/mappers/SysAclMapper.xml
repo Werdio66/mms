@@ -127,4 +127,11 @@
         on a.id = ra.acl_id
         where ra.role_id = #{roleId}
     </select>
+
+    <select id="getByUrl" resultMap="SysAclMap">
+         select
+          id, name, acl_module_id, code, url, type, status, seq, remark, operator, operate_time, operate_ip
+        from mms.sys_acl
+        where url = #{url}
+    </select>
 </mapper>

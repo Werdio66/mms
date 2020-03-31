@@ -98,22 +98,19 @@
 
     <select id="countByMail" resultType="int">
         select count(1) from sys_user
-        <where>
-            mail = #{mail}
-            <if test="id != null">
-                id != #{id}
-            </if>
-        </where>
+        where mail = #{mail}
+
+        <if test="id != null">
+            and id != #{id}
+        </if>
     </select>
 
     <select id="countByTelephone" resultType="int">
         select count(1) from sys_user
-        <where>
-            telephone = #{telephone}
-            <if test="id != null">
-                id != #{id}
-            </if>
-        </where>
+        where telephone = #{telephone}
+        <if test="id != null">
+            and id != #{id}
+        </if>
     </select>
 
     <select id="queryByDeptId" resultMap="SysUserMap">

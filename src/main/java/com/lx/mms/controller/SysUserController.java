@@ -8,6 +8,7 @@ import com.lx.mms.entity.SysUser;
 import com.lx.mms.entity.param.UserParam;
 import com.lx.mms.service.SysUserService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
  * @since 2020-03-14 09:56:17
  */
 @Slf4j
-@RestController
+@Controller
 @RequestMapping("/sys/user")
 public class SysUserController {
     /**
@@ -32,6 +33,11 @@ public class SysUserController {
      */
     @Resource
     private SysUserService sysUserService;
+
+    @GetMapping("/noAuth.page")
+    public String noAuth(){
+        return "noAuth";
+    }
 
     @ResponseBody
     @GetMapping("/queryAll.json")
@@ -70,6 +76,7 @@ public class SysUserController {
         sysUserService.deleteById(id);
         return RespData.ok();
     }
+
     @ResponseBody
     @GetMapping("/queryByDeptId.json")
     public RespData queryByDeptId(@RequestParam(name = "pageNum", required = false, defaultValue = "1") Integer pageNum,
@@ -85,6 +92,7 @@ public class SysUserController {
         return RespData.ok(users);
     }
 
+    @ResponseBody
     @GetMapping("/userList.json")
     public RespData loadUserList(Long roleId){
         log.info("查询角色对应的用户信息：");

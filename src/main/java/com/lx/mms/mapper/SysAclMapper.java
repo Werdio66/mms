@@ -70,4 +70,6 @@ public interface SysAclMapper {
     List<SysAcl> getUserAclList(Long userId);
 
     List<SysAcl> getRoleAclList(Long roleId);
+
+    List<SysAcl> getByUrl(String url);
 }

@@ -40,6 +40,21 @@
     <url-pattern>/sys/*</url-pattern>
     <url-pattern>/admin/*</url-pattern>
   </filter-mapping>
+  
+  <!-- 权限拦截器 -->
+  <filter>
+    <filter-name>aclControlFilter</filter-name>
+    <filter-class>com.lx.mms.filter.AclControlFilter</filter-class>
+    <init-param>
+      <param-name>exclusionUrls</param-name>
+      <param-value>/sys/user/noAoth.page</param-value>
+    </init-param>
+  </filter>
+  <filter-mapping>
+    <filter-name>aclControlFilter</filter-name>
+    <url-pattern>/sys/*</url-pattern>
+    <url-pattern>/admin/*</url-pattern>
+  </filter-mapping>
   <!-- 监听器 -->
   
   

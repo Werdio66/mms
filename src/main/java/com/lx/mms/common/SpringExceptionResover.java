@@ -39,7 +39,7 @@ public class SpringExceptionResover implements HandlerExceptionResolver {
             }else {
                 // 不是自定义异常类
                 log.error("其他异常：url = {},异常信息：{}", url, ex.getMessage());
-                log.error("堆栈信息：{}", Arrays.toString(ex.getStackTrace()));
+                log.error("堆栈信息：", ex);
                 RespData respData = RespData.error(ex.getMessage());
                 mv = new ModelAndView("jsonView", respData.toMap());
             }
