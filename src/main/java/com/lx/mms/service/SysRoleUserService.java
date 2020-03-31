@@ -59,4 +59,5 @@ public interface SysRoleUserService {
      */
     boolean deleteById(Long id);
 
+    int save(List<Long> userIds, Long roleId);
 }

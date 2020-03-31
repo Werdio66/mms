@@ -61,4 +61,7 @@ public interface SysRoleUserMapper {
      */
     int deleteById(Long id);
 
+    List<Long> queryUserIdByRoleId(Long roleId);
+
+    void deleteByRoleId(Long roleId);
 }

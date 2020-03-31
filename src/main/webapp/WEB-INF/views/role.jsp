@@ -147,11 +147,49 @@
     // 取出角色的 HTML，使用 mustache 渲染
     var roleListTemplate = $('#roleListTemplate').html();
     Mustache.parse(roleListTemplate);
+    var selectedUsersTemplate = $('#selectedUsersTemplate').html();
+    Mustache.parse(selectedUsersTemplate);
+    var unSelectedUsersTemplate = $("#unSelectedUsersTemplate").html();
+    Mustache.parse(unSelectedUsersTemplate);
+
+    // zTree
+    <!-- 树结构相关 开始 -->
+    var zTreeObj = [];
+    var modulePrefix = 'm_';
+    var aclPrefix = 'a_';
+    var nodeMap = {};
+    var lastRoleId = -1;
+    var selectFirstTab = true;
+    var hasMultiSelect = false;
+
+    var setting = {
+        check: {
+            enable: true,
+            chkDisabledInherit: true,
+            chkboxType: {"Y": "ps", "N": "ps"}, //auto check 父节点 子节点
+            autoCheckTrigger: true
+        },
+        data: {
+            simpleData: {
+                enable: true,
+                rootPId: 0
+            }
+        },
+        callback: {
+            onClick: onClickTreeNode
+        }
+    };
+
+    function onClickTreeNode(e, treeId, treeNode) { // 绑定单击事件
+        var zTree = $.fn.zTree.getZTreeObj("roleAclTree");
+        zTree.expandNode(treeNode);
+    }
 
     loadRoleList();
 
     function loadRoleList() {
         console.log('加载角色列表：');
+
         $.ajax({
             url : '/sys/role/queryAll.json',
             method : 'get',
@@ -177,19 +215,228 @@
         });
     }
 
+    function loadRoleUser(roleId) {
+        console.log("加载角色对应的用户信息：");
+        console.log("角色 id = ", roleId);
 
+        $.ajax({
+            url : '/sys/user/userList.json',
+            method : 'get',
+            data : {roleId : roleId},
+            success : function (result) {
+                if (result.rec) {
+                    var renderedSelect = Mustache.render(selectedUsersTemplate, {userList: result.data.selected});
+                    var renderedUnSelect = Mustache.render(unSelectedUsersTemplate, {userList: result.data.unselected});
+                    $("#roleUserList").html(renderedSelect + renderedUnSelect);
+
+                    if (!hasMultiSelect) {
+                        $('select[name="roleUserList"]').bootstrapDualListbox({
+                            showFilterInputs: false,
+                            moveOnSelect: false,
+                            infoText: false
+                        });
+                        hasMultiSelect = true;
+                    } else {
+                        $('select[name="roleUserList"]').bootstrapDualListbox('refresh', true);
+                    }
+
+                }else {
+                    showMessage("加载角色用户数据", result.msg, false);
+                }
+            }
+        })
+    }
+    function handleRoleSelected(roleId) {
+        console.log("查询角色已经有的权限：");
+        console.log("角色 id = ", roleId);
+
+        if (lastRoleId != -1) {
+            var lastRole = $("#role_" + lastRoleId + " .dd2-content:first");
+            lastRole.removeClass("btn-yellow");
+            lastRole.removeClass("no-hover");
+        }
+        var currentRole = $("#role_" + roleId + " .dd2-content:first");
+        currentRole.addClass("btn-yellow");
+        currentRole.addClass("no-hover");
+        lastRoleId = roleId;
+
+        $('#roleTab a:first').trigger('click');
+        if (selectFirstTab){
+            loadRoleAcl(roleId);
+        }
+    }
+
+    $("#roleTab a[data-toggle='tab']").on("shown.bs.tab", function(e) {
+        if(lastRoleId == -1) {
+            showMessage("加载角色关系","请先在左侧选择操作的角色", false);
+            return;
+        }
+        if (e.target.getAttribute("href") == '#roleAclTab') {
+            selectFirstTab = true;
+            loadRoleAcl(lastRoleId);
+        } else {
+            selectFirstTab = false;
+            loadRoleUser(lastRoleId);
+        }
+    });
+
+    $(".saveRoleAcl").click(function (e) {
+        e.preventDefault();
+        if (lastRoleId == -1) {
+            showMessage("保存角色与用户的关系", "请现在左侧选择需要操作的角色", false);
+            return;
+        }
+        var ids = getTreeSelectedId();
+        console.log("选中的权限点ids = ", ids);
+        var json = {
+            ids : ids,
+            roleId : lastRoleId
+        };
+        console.log("保存角色权限信息：", json);
+        $.ajax({
+            url : '/sys/roleAcl/save.json',
+            method : 'post',
+            data : json,
+            success : function (result) {
+                if (result.rec){
+                    console.log('授予角色权限成功');
+                    showMessage("给角色分配权限", '操作成功', true);
+                    loadRoleAcl(lastRoleId);
+                }else {
+                    showMessage("给角色分配权限", result.msg, false);
+                }
+            }
+        })
+    });
+
+    $(".saveRoleUser").click(function (e) {
+        e.preventDefault();
+        if (lastRoleId == -1) {
+            showMessage("保存角色与用户的关系", "请现在左侧选择需要操作的角色", false);
+            return;
+        }
+        var ids = $("#roleUserList").val() ? $("#roleUserList").val().join(",") : '';
+        console.log("选中的权限点ids = ", ids);
+        var json = {
+            ids : ids,
+            roleId : lastRoleId
+        };
+        console.log("保存角色权限信息：", json);
+        $.ajax({
+            url : '/sys/roleUser/save.json',
+            method : 'post',
+            data : json,
+            success : function (result) {
+                if (result.rec){
+                    console.log('保存角色与用户的关系成功');
+                    showMessage("保存角色与用户的关系", '操作成功', true);
+                    loadRoleUser(lastRoleId);
+                }else {
+                    showMessage("保存角色与用户的关系", result.msg, false);
+                }
+            }
+        })
+    });
+
+    function getTreeSelectedId() {
+        var treeObj = $.fn.zTree.getZTreeObj("roleAclTree");
+        var nodes = treeObj.getCheckedNodes(true);
+        var ids = "";
+        for(var i = 0; i < nodes.length; i++) {
+            if(nodes[i].id.startsWith(aclPrefix)) {
+                if (i == nodes.length - 1){
+                    ids += nodes[i].dataId;
+                }else {
+                    ids += nodes[i].dataId;
+                    ids += ',';
+                }
+
+            }
+        }
+        return ids;
+    }
+    function loadRoleAcl(roleId) {
+
+        $.ajax({
+            url : '/sys/role/roleTree.json',
+            method : 'get',
+            data : {roleId : roleId},
+            success : function (result) {
+                if (result.rec){
+                    console.log("查询角色权限树成功");
+                    console.log(result.data);
+                    renderRoleTree(result.data);
+                }else {
+                    showMessage('加载角色权限树', result.msg, false);
+                }
+            }
+        })
+    }
+
+
+    function renderRoleTree(aclModuleList) {
+        zTreeObj = [];
+        recursivePrepareTreeData(aclModuleList);
+        for(var key in nodeMap) {
+            zTreeObj.push(nodeMap[key]);
+        }
+        $.fn.zTree.init($("#roleAclTree"), setting, zTreeObj);
+    }
+
+    function recursivePrepareTreeData(aclModuleList) {
+        // prepare nodeMap
+        if (aclModuleList && aclModuleList.length > 0) {
+            $(aclModuleList).each(function(i, aclModule) {
+                var hasChecked = false;
+                if (aclModule.aclList && aclModule.aclList.length > 0) {
+                    $(aclModule.aclList).each(function(i, acl) {
+                        zTreeObj.push({
+                            id: aclPrefix + acl.id,
+                            pId: modulePrefix + acl.aclModuleId,
+                            name: acl.name + ((acl.type == 1) ? '(菜单)' : ''),
+                            chkDisabled: !acl.hasAcl,
+                            checked: acl.checked,
+                            dataId: acl.id
+                        });
+                        if(acl.checked) {
+                            hasChecked = true;
+                        }
+                    });
+                }
+                if ((aclModule.aclModuleList && aclModule.aclModuleList.length > 0) ||
+                    (aclModule.aclList && aclModule.aclList.length > 0)) {
+                    nodeMap[modulePrefix + aclModule.id] = {
+                        id : modulePrefix + aclModule.id,
+                        pId: modulePrefix + aclModule.parentId,
+                        name: aclModule.name,
+                        open: hasChecked
+                    };
+                    var tempAclModule = nodeMap[modulePrefix + aclModule.id];
+                    while(hasChecked && tempAclModule) {
+                        if(tempAclModule) {
+                            nodeMap[tempAclModule.id] = {
+                                id: tempAclModule.id,
+                                pId: tempAclModule.pId,
+                                name: tempAclModule.name,
+                                open: true
+                            }
+                        }
+                        tempAclModule = nodeMap[tempAclModule.pId];
+                    }
+                }
+                recursivePrepareTreeData(aclModule.aclModuleList);
+            });
+        }
+    }
     // 绑定角色点击的事件
     function bindRoleClick() {
 
-      /*  $(".role-name").click(function (e) {
-            console.log("点击部门名称：");
-            // 不递归
+        $(".role-name").click(function (e) {
             e.preventDefault();
             e.stopPropagation();
-            var roleId = $(this).attr("data-id");
-            console.log("部门 id = ", roleId);
-            loadUserList(roleId);
-        });*/
+            var roleId = $(this).data("id");
+            handleRoleSelected(roleId);
+        });
 
         // 新增角色
         $('.role-add').click(function () {
@@ -353,7 +600,10 @@
             $("#roleRemark").val('');
         }
 
+        // 点击名称显示角色对应的权限
+
     }
+
 
 </script>
 </body>

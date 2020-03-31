@@ -7,14 +7,14 @@
         <result property="roleId" column="role_id" jdbcType="INTEGER"/>
         <result property="aclId" column="acl_id" jdbcType="INTEGER"/>
         <result property="operator" column="operator" jdbcType="VARCHAR"/>
-        <result property="operatorTime" column="operator_time" jdbcType="TIMESTAMP"/>
-        <result property="operatorIp" column="operator_ip" jdbcType="VARCHAR"/>
+        <result property="operatorTime" column="operate_time" jdbcType="TIMESTAMP"/>
+        <result property="operatorIp" column="operate_ip" jdbcType="VARCHAR"/>
     </resultMap>
 
     <!--查询单个-->
     <select id="queryById" resultMap="SysRoleAclMap">
         select
-          id, role_id, acl_id, operator, operator_time, operator_ip
+          id, role_id, acl_id, operator, operate_time, operate_ip
         from mms.sys_role_acl
         where id = #{id}
     </select>
@@ -22,7 +22,7 @@
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="SysRoleAclMap">
         select
-          id, role_id, acl_id, operator, operator_time, operator_ip
+          id, role_id, acl_id, operator, operate_time, operate_ip
         from mms.sys_role_acl
         limit #{offset}, #{limit}
     </select>
@@ -30,14 +30,14 @@
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="SysRoleAclMap">
         select
-          id, role_id, acl_id, operator, operator_time, operator_ip
+          id, role_id, acl_id, operator, operate_time, operate_ip
         from mms.sys_role_acl
 
     </select>
 
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into mms.sys_role_acl(role_id, acl_id, operator, operator_time, operator_ip)
+        insert into mms.sys_role_acl(role_id, acl_id, operator, operate_time, operate_ip)
         values (#{roleId}, #{aclId}, #{operator}, #{operatorTime}, #{operatorIp})
     </insert>
 
@@ -55,10 +55,10 @@
                 operator = #{operator},
             </if>
             <if test="operatorTime != null">
-                operator_time = #{operatorTime},
+                operate_time = #{operatorTime},
             </if>
             <if test="operatorIp != null and operatorIp != ''">
-                operator_ip = #{operatorIp},
+                operate_ip = #{operatorIp},
             </if>
         </set>
         where id = #{id}
@@ -69,4 +69,11 @@
         delete from mms.sys_role_acl where id = #{id}
     </delete>
 
+    <delete id="deleteAclByRoleId">
+        delete from mms.sys_role_acl where role_id = #{roleId}
+    </delete>
+
+    <select id="countByRoleId" resultType="int">
+        select count(1) from sys_role_acl where role_id = #{roleId}
+    </select>
 </mapper>

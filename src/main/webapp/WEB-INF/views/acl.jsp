@@ -323,7 +323,7 @@
             e.stopPropagation();
             var aclModuleId = $(this).data("id");
             console.log("权限模块 id = ", aclModuleId);
-            loadAclList(aclModuleId);
+            handleAclModuleSelected(aclModuleId);
         });
 
         // 新增权限
@@ -512,6 +512,7 @@
     var aclList;
     var aclMap = {};
     var aclListTemplate = $('#aclListTemplate').html();
+    var lastClickAclModuleId = -1;
     Mustache.parse(aclListTemplate);
 
     function loadAclList(aclModuleId) {
@@ -536,6 +537,18 @@
         })
     }
 
+    function handleAclModuleSelected(aclModuleId) {
+        if (lastClickAclModuleId != -1) {
+            var lastAclModule = $("#aclModule_" + lastClickAclModuleId + " .dd2-content:first");
+            lastAclModule.removeClass("btn-yellow");
+            lastAclModule.removeClass("no-hover");
+        }
+        var currentAclModule = $("#aclModule_" + aclModuleId + " .dd2-content:first");
+        currentAclModule.addClass("btn-yellow");
+        currentAclModule.addClass("no-hover");
+        lastClickAclModuleId = aclModuleId;
+        loadAclList(aclModuleId);
+    }
 
     function renderAclListAndPage(result, url, aclModuleId) {
         if (result.rec) {

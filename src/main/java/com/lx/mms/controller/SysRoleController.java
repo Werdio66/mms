@@ -1,14 +1,18 @@
 package com.lx.mms.controller;
 
 import com.lx.mms.common.RespData;
+import com.lx.mms.dto.AclModuleLevelDto;
 import com.lx.mms.entity.SysRole;
 import com.lx.mms.entity.param.RoleParam;
 import com.lx.mms.service.SysRoleService;
+import com.lx.mms.service.impl.SysTreeService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -26,6 +30,9 @@ public class SysRoleController {
      */
     @Resource
     private SysRoleService sysRoleService;
+
+    @Autowired
+    private SysTreeService sysTreeService;
 
     @GetMapping("/index.page")
     public String index(){
@@ -72,6 +79,16 @@ public class SysRoleController {
         sysRoleService.deleteById(id);
 
         return RespData.ok();
+    }
+
+    @ResponseBody
+    @GetMapping("/roleTree.json")
+    public RespData roleTree(Long roleId){
+        log.info("角色权限树：");
+        log.info("角色 id = {}", roleId);
+        List<AclModuleLevelDto> aclModuleLevelDtos = sysTreeService.roleTree(roleId);
+        log.info("权限树层级列表：{}", aclModuleLevelDtos);
+        return RespData.ok(aclModuleLevelDtos);
     }
 
 }

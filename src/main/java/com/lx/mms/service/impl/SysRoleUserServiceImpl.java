@@ -1,12 +1,21 @@
 package com.lx.mms.service.impl;
 
+import com.lx.mms.common.RequestHolder;
 import com.lx.mms.entity.SysRoleUser;
+import com.lx.mms.entity.SysUser;
 import com.lx.mms.mapper.SysRoleUserMapper;
 import com.lx.mms.service.SysRoleUserService;
+import com.lx.mms.util.IpUtil;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * (SysRoleUser)表服务实现类
@@ -84,5 +93,35 @@ public class SysRoleUserServiceImpl implements SysRoleUserService {
     @Override
     public boolean deleteById(Long id) {
         return this.sysRoleUserMapper.deleteById(id) > 0;
+    }
+
+    @Transactional
+    @Override
+    public int save(List<Long> userIds, Long roleId) {
+        if (CollectionUtils.isEmpty(userIds)){
+            sysRoleUserMapper.deleteByRoleId(roleId);
+            return 0;
+        }
+        // 保存之前的用户 id
+        List<Long> userIdList = sysRoleUserMapper.queryUserIdByRoleId(roleId);
+
+        userIdList.sort(Comparator.comparing(o -> o));
+        userIds.sort(Comparator.comparing(o -> o));
+
+        // 判断数据是否修改
+        if (userIdList.equals(userIds)){
+            return 0;
+        }
+        // 删除之前的数据
+        sysRoleUserMapper.deleteByRoleId(roleId);
+
+        int row = 0;
+        for (Long userId : userIds) {
+            SysRoleUser roleUser = SysRoleUser.builder().roleId(roleId).userId(userId).operator(RequestHolder.getCurrentUser().getUsername())
+                    .operatorIp(IpUtil.getRemoteIp(RequestHolder.getCurrentRequest())).operatorTime(LocalDateTime.now()).build();
+
+            row += sysRoleUserMapper.insert(roleUser);
+        }
+        return row;
     }
 }

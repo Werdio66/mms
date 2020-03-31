@@ -44,9 +44,9 @@
     <form class="form-signin" action="/login.page?ret=<%=ret%>" method="post">
         <h2 class="form-signin-heading">请登陆</h2>
         <label for="inputEmail" class="sr-only">邮箱/电话</label>
-        <input type="text" id="inputEmail" value="${username}" class="form-control" placeholder="邮箱/手机号" name="username" required autofocus>
+        <input type="text" id="inputEmail" value="1111" <%--value="${username}"--%> class="form-control" placeholder="邮箱/手机号" name="username" required autofocus>
         <label for="inputPassword" class="sr-only">密码</label>
-        <input type="password" id="inputPassword" class="form-control" placeholder="密码" name="password" required >
+        <input type="password" id="inputPassword" value="1111" class="form-control" placeholder="密码" name="password" required >
         <div class="checkbox" style="color: red;">${error}</div>
         <button class="btn btn-lg btn-primary btn-block" type="submit">登 陆</button>
     </form>

@@ -17,6 +17,8 @@ import java.io.Serializable;
 @Setter
 @AllArgsConstructor
 @ToString
+// id 相等才是相同的对象
+@EqualsAndHashCode(of = "id")
 public class SysAcl implements Serializable {
     private static final long serialVersionUID = -35462858038104638L;
     /**

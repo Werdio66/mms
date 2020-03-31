@@ -3,10 +3,13 @@ package com.lx.mms.service.impl;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import com.lx.mms.dto.AclDto;
 import com.lx.mms.dto.AclModuleLevelDto;
 import com.lx.mms.dto.DeptLevelDto;
+import com.lx.mms.entity.SysAcl;
 import com.lx.mms.entity.SysAclModule;
 import com.lx.mms.entity.SysDept;
+import com.lx.mms.mapper.SysAclMapper;
 import com.lx.mms.mapper.SysAclModuleMapper;
 import com.lx.mms.mapper.SysDeptMapper;
 import com.lx.mms.util.LevelUtil;
@@ -14,9 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class SysTreeService {
@@ -27,6 +29,90 @@ public class SysTreeService {
     @Autowired
     private SysAclModuleMapper aclModuleMapper;
 
+    @Autowired
+    private SysCoreService sysCoreService;
+
+    @Autowired
+    private SysAclMapper sysAclMapper;
+
+    /**
+     *  获取指定角色的权限列表
+     * @param roleId
+     * @return
+     */
+    public List<AclModuleLevelDto> roleTree(Long roleId){
+        // 获取当前登录用户的权限
+        List<SysAcl> userAclList = sysCoreService.getCurrentUserAclList();
+        // 获取当前角色的权限列表
+        List<SysAcl> roleAclList = sysCoreService.getRoleAclList(roleId);
+
+        Set<Long> userAclIdSet = userAclList.stream().map(SysAcl::getId).collect(Collectors.toSet());
+        Set<Long> roleAclIdSet = roleAclList.stream().map(SysAcl::getId).collect(Collectors.toSet());
+
+        // 存放适配后的权限列表
+        List<AclDto> aclDtoList = new ArrayList<>();
+
+        List<SysAcl> allAcl = sysAclMapper.queryAll();
+
+        for (SysAcl acl : allAcl) {
+            AclDto aclDto = AclDto.adapt(acl);
+            // 判断当前用户是否拥有这个权限
+            if (userAclIdSet.contains(acl.getId())){
+                aclDto.setHasAcl(true);
+            }
+            // 当前角色是否已经分配了这个权限
+            if (roleAclIdSet.contains(acl.getId())){
+                aclDto.setChecked(true);
+            }
+
+            aclDtoList.add(aclDto);
+        }
+
+        return aclListToTree(aclDtoList);
+    }
+
+    /**
+     * 将权限列表转换成树
+     *
+     * @param aclDtoList
+     * @return
+     */
+    private List<AclModuleLevelDto> aclListToTree(List<AclDto> aclDtoList) {
+
+        // 拿到权限模块列表
+        List<AclModuleLevelDto> aclModuleLevelList = aclModelTree();
+        // 存储权限模块下的权限点信息
+        Multimap<Long, AclDto> moduleIdAclMap = ArrayListMultimap.create();
+
+        for(AclDto acl : aclDtoList) {
+            // 当前权限是否有效
+            if (acl.getStatus() == 1) {
+                moduleIdAclMap.put(acl.getAclModuleId(), acl);
+            }
+        }
+
+        bindAclsWithOrder(aclModuleLevelList, moduleIdAclMap);
+        return aclModuleLevelList;
+    }
+
+    private void bindAclsWithOrder(List<AclModuleLevelDto> aclModuleLevelList, Multimap<Long, AclDto> moduleIdAclMap) {
+        if (CollectionUtils.isEmpty(aclModuleLevelList)) {
+            return;
+        }
+        // 将权限点挂载到权限模块上
+        for (AclModuleLevelDto dto : aclModuleLevelList) {
+            // 取出当前权限模块所有的权限点信息
+            List<AclDto> aclDtoList = (List<AclDto>)moduleIdAclMap.get(dto.getId());
+            if (org.apache.commons.collections.CollectionUtils.isNotEmpty(aclDtoList)) {
+                // 对权限点排序
+                aclDtoList.sort(Comparator.comparingInt(SysAcl::getSeq));
+                // 挂载
+                dto.setAclList(aclDtoList);
+            }
+            // 递归处理当前权限模块的子模块
+            bindAclsWithOrder(dto.getAclModuleList(), moduleIdAclMap);
+        }
+    }
 
     public List<DeptLevelDto> deptTree(){
         // 查询所有的部门

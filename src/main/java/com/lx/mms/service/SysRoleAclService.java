@@ -59,4 +59,5 @@ public interface SysRoleAclService {
      */
     boolean deleteById(Long id);
 
+    int saveRoleAclByRoleId(Long roleId, String ids);
 }

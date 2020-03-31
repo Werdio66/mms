@@ -1,6 +1,6 @@
 package com.lx.mms.entity;
 
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.io.Serializable;
@@ -11,7 +11,12 @@ import java.io.Serializable;
  * @author Werdio丶
  * @since 2020-03-14 09:56:17
  */
-@Data
+@NoArgsConstructor
+@Builder
+@Getter
+@Setter
+@AllArgsConstructor
+@ToString
 public class SysRoleUser implements Serializable {
     private static final long serialVersionUID = 565829079865125485L;
     /**

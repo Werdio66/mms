@@ -7,14 +7,14 @@
         <result property="roleId" column="role_id" jdbcType="INTEGER"/>
         <result property="userId" column="user_id" jdbcType="INTEGER"/>
         <result property="operator" column="operator" jdbcType="VARCHAR"/>
-        <result property="operatorTime" column="operator_time" jdbcType="TIMESTAMP"/>
-        <result property="operatorIp" column="operator_ip" jdbcType="VARCHAR"/>
+        <result property="operatorTime" column="operate_time" jdbcType="TIMESTAMP"/>
+        <result property="operatorIp" column="operate_ip" jdbcType="VARCHAR"/>
     </resultMap>
 
     <!--查询单个-->
     <select id="queryById" resultMap="SysRoleUserMap">
         select
-          id, role_id, user_id, operator, operator_time, operator_ip
+          id, role_id, user_id, operator, operate_time, operate_ip
         from mms.sys_role_user
         where id = #{id}
     </select>
@@ -22,7 +22,7 @@
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="SysRoleUserMap">
         select
-          id, role_id, user_id, operator, operator_time, operator_ip
+          id, role_id, user_id, operator, operate_time, operate_ip
         from mms.sys_role_user
         limit #{offset}, #{limit}
     </select>
@@ -30,14 +30,14 @@
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="SysRoleUserMap">
         select
-          id, role_id, user_id, operator, operator_time, operator_ip
+          id, role_id, user_id, operator, operate_time, operate_ip
         from mms.sys_role_user
 
     </select>
 
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into mms.sys_role_user(role_id, user_id, operator, operator_time, operator_ip)
+        insert into mms.sys_role_user(role_id, user_id, operator, operate_time, operate_ip)
         values (#{roleId}, #{userId}, #{operator}, #{operatorTime}, #{operatorIp})
     </insert>
 
@@ -55,10 +55,10 @@
                 operator = #{operator},
             </if>
             <if test="operatorTime != null">
-                operator_time = #{operatorTime},
+                operate_time = #{operatorTime},
             </if>
             <if test="operatorIp != null and operatorIp != ''">
-                operator_ip = #{operatorIp},
+                operate_ip = #{operatorIp},
             </if>
         </set>
         where id = #{id}
@@ -69,4 +69,13 @@
         delete from mms.sys_role_user where id = #{id}
     </delete>
 
+    <select id="queryUserIdByRoleId" resultType="long">
+        select user_id
+        from sys_role_user
+        where role_id = #{roleId}
+    </select>
+
+    <delete id="deleteByRoleId">
+        delete from mms.sys_role_user where role_id = #{roleId}
+    </delete>
 </mapper>

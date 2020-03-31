@@ -2,6 +2,7 @@ package com.lx.mms.controller;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import com.lx.mms.common.RespData;
 import com.lx.mms.entity.SysUser;
 import com.lx.mms.entity.param.UserParam;
@@ -10,7 +11,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * (SysUser)表控制层
@@ -80,4 +85,29 @@ public class SysUserController {
         return RespData.ok(users);
     }
 
+    @GetMapping("/userList.json")
+    public RespData loadUserList(Long roleId){
+        log.info("查询角色对应的用户信息：");
+        log.info("角色 id = {}", roleId);
+        // 查询指定角色的用户
+        List<SysUser> selectedUserList = sysUserService.queryByRoleId(roleId);
+        // 查询所有的用户
+        List<SysUser> allUserList = sysUserService.queryAll();
+        // 存放未指定角色的用户
+        List<SysUser> unSelectUserList = Lists.newArrayList();
+
+        Set<Long> selectIdSet = selectedUserList.stream().map(SysUser::getId).collect(Collectors.toSet());
+
+        for (SysUser user : allUserList) {
+            if (user.getStatus() == 1 && !selectIdSet.contains(user.getId())){
+                unSelectUserList.add(user);
+            }
+        }
+
+        Map<String, List<SysUser>> map = new HashMap<>();
+        map.put("selected", selectedUserList);
+        map.put("unselected", unSelectUserList);
+
+        return RespData.ok(map);
+    }
 }

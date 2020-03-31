@@ -109,4 +109,22 @@
         </if>
 
     </select>
+
+    <select id="getUserAclList" resultMap="SysAclMap">
+
+        select a.id, a.name, a.acl_module_id, a.code, a.url, a.type, a.status, a.seq, a.remark, a.operator, a.operate_time, a.operate_ip
+        from sys_role_user ru join sys_role_acl ra
+        on ru.role_id = ra.role_id
+        join sys_acl a
+        on ra.acl_id = a.id
+        where ru.user_id = #{userId}
+
+    </select>
+
+    <select id="getRoleAclList" resultMap="SysAclMap">
+        select a.id, a.name, a.acl_module_id, a.code, a.url, a.type, a.status, a.seq, a.remark, a.operator, a.operate_time, a.operate_ip
+        from sys_acl a join sys_role_acl ra
+        on a.id = ra.acl_id
+        where ra.role_id = #{roleId}
+    </select>
 </mapper>

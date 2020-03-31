@@ -122,4 +122,12 @@
         from mms.sys_user
         where dept_id = #{deptId}
     </select>
+
+    <select id="queryByRoleId" resultMap="SysUserMap">
+        select
+          u.id, u.username, u.telephone, u.mail, u.password, u.dept_id, u.status, u.remark, u.operator, u.operate_time, u.operate_ip
+        from mms.sys_user u join sys_role_user ru
+        on ru.user_id = u.id
+        where ru.role_id = #{roleId}
+    </select>
 </mapper>

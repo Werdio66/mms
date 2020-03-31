@@ -216,6 +216,7 @@
 
     // 取出部门树的 HTML，使用 mustache 渲染
     var deptListTemplate = $('#deptListTemplate').html();
+    var lastClickDeptId = -1;
     Mustache.parse(deptListTemplate);
 
     loadDeptTree();
@@ -246,6 +247,19 @@
         });
     }
 
+    function handleDepSelected(deptId) {
+        if (lastClickDeptId != -1) {
+            var lastDept = $("#dept_" + lastClickDeptId + " .dd2-content:first");
+            lastDept.removeClass("btn-yellow");
+            lastDept.removeClass("no-hover");
+        }
+        var currentDept = $("#dept_" + deptId + " .dd2-content:first");
+        currentDept.addClass("btn-yellow");
+        currentDept.addClass("no-hover");
+        lastClickDeptId = deptId;
+        loadUserList(deptId);
+    }
+
     // 递归渲染部门树
     function recursiveRenderDept(deptList) {
         if(deptList && deptList.length > 0) {
@@ -270,7 +284,7 @@
             e.stopPropagation();
             var deptId = $(this).attr("data-id");
             console.log("部门 id = ", deptId);
-            loadUserList(deptId);
+            handleDepSelected(deptId);
         });
 
         // 新增部门

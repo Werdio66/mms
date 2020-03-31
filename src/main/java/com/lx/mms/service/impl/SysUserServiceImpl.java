@@ -136,6 +136,11 @@ public class SysUserServiceImpl implements SysUserService {
         return new PageInfo<>(users);
     }
 
+    @Override
+    public List<SysUser> queryByRoleId(Long roleId) {
+        return sysUserMapper.queryByRoleId(roleId);
+    }
+
     private SysUser buildUser(UserParam userParam) {
         SysUser user = SysUser.builder().mall(userParam.getMail()).deptId(userParam.getDeptId())
                 .remark(userParam.getRemark()).status(userParam.getStatus())

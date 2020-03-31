@@ -70,4 +70,6 @@ public interface SysUserMapper {
     int countByTelephone(@Param("telephone") String telephone, @Param("id") Long id);
 
     List<SysUser> queryByDeptId(Long deptId);
+
+    List<SysUser> queryByRoleId(Long roleId);
 }

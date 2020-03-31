@@ -67,4 +67,6 @@ public interface SysUserService {
     SysUser findByKeyword(String username);
 
     PageInfo<SysUser> queryByDeptId(Long deptId);
+
+    List<SysUser> queryByRoleId(Long roleId);
 }

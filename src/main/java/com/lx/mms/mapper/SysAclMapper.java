@@ -66,4 +66,8 @@ public interface SysAclMapper {
                      @Param("id") Long id);
 
     List<SysAcl> querybyAclModelId(Long aclModuleId);
+
+    List<SysAcl> getUserAclList(Long userId);
+
+    List<SysAcl> getRoleAclList(Long roleId);
 }
