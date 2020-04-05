@@ -6,11 +6,14 @@ import com.lx.mms.entity.param.AclModuleParam;
 import com.lx.mms.exception.ParamException;
 import com.lx.mms.mapper.SysAclModuleMapper;
 import com.lx.mms.service.SysAclModuleService;
+import com.lx.mms.service.SysLogService;
 import com.lx.mms.util.BeanValidation;
 import com.lx.mms.util.IpUtil;
 import com.lx.mms.util.LevelUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
@@ -27,6 +30,9 @@ import java.util.List;
 public class SysAclModuleServiceImpl implements SysAclModuleService {
     @Resource
     private SysAclModuleMapper sysAclModuleMapper;
+
+    @Autowired
+    private SysLogService sysLogService;
 
     /**
      * 通过ID查询单条数据
@@ -78,14 +84,20 @@ public class SysAclModuleServiceImpl implements SysAclModuleService {
      * @param aclModuleParam 实例对象
      * @return 实例对象
      */
+    @Transactional
     @Override
     public int update(AclModuleParam aclModuleParam) {
         // 校验参数
         checkAclModel(aclModuleParam);
         SysAclModule aclModel = buildAclModel(aclModuleParam);
-
+        SysAclModule before = sysAclModuleMapper.queryById(aclModuleParam.getId());
         aclModel.setId(aclModuleParam.getId());
-        return sysAclModuleMapper.update(aclModel);
+         int row = sysAclModuleMapper.update(aclModel);
+
+        if (row > 0){
+            sysLogService.saveAclModuleLog(before, aclModel);
+        }
+        return row;
     }
 
     /**
@@ -94,17 +106,29 @@ public class SysAclModuleServiceImpl implements SysAclModuleService {
      * @param id 主键
      * @return 是否成功
      */
+    @Transactional
     @Override
     public boolean deleteById(Long id) {
-        return this.sysAclModuleMapper.deleteById(id) > 0;
+        SysAclModule before = sysAclModuleMapper.queryById(id);
+        int row = this.sysAclModuleMapper.deleteById(id);
+        if (row > 0){
+            sysLogService.saveAclModuleLog(before, null);
+        }
+        return row > 0;
     }
 
+    @Transactional
     @Override
     public int save(AclModuleParam aclModuleParam) {
         // 校验参数
         checkAclModel(aclModuleParam);
         SysAclModule aclModule = buildAclModel(aclModuleParam);
-        return sysAclModuleMapper.insert(aclModule);
+        int row = sysAclModuleMapper.insert(aclModule);
+
+        if (row > 0){
+            sysLogService.saveAclModuleLog(null, aclModule);
+        }
+        return row;
     }
 
     private SysAclModule buildAclModel(AclModuleParam aclModuleParam) {

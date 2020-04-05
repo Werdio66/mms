@@ -366,7 +366,6 @@
                             $("#dialog-aclModule-form").dialog("close");
                             // 将模态框中的数据清除
                             clearData();
-                            showMessage("新增权限", '操作成功', true);
                         }else {
                             showMessage("新增权限", result.msg, false);
                         }

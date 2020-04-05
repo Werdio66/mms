@@ -8,9 +8,12 @@ import com.lx.mms.entity.param.UserParam;
 import com.lx.mms.exception.ParamException;
 import com.lx.mms.mapper.SysAclMapper;
 import com.lx.mms.service.SysAclService;
+import com.lx.mms.service.SysLogService;
 import com.lx.mms.util.BeanValidation;
 import com.lx.mms.util.IpUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
@@ -27,6 +30,8 @@ import java.util.List;
 public class SysAclServiceImpl implements SysAclService {
     @Resource
     private SysAclMapper sysAclMapper;
+    @Autowired
+    private SysLogService sysLogService;
 
     /**
      * 通过ID查询单条数据
@@ -78,12 +83,18 @@ public class SysAclServiceImpl implements SysAclService {
      * @param aclParam 实例对象
      * @return 实例对象
      */
+    @Transactional
     @Override
     public int update(AclParam aclParam) {
         checkAcl(aclParam);
         SysAcl acl = buildAcl(aclParam);
+        SysAcl before = sysAclMapper.queryById(aclParam.getId());
         acl.setId(aclParam.getId());
-        return sysAclMapper.update(acl);
+        int row = sysAclMapper.update(acl);
+        if (row > 0){
+            sysLogService.saveAclLog(before, acl);
+        }
+        return row;
     }
 
     /**
@@ -92,16 +103,27 @@ public class SysAclServiceImpl implements SysAclService {
      * @param id 主键
      * @return 是否成功
      */
+    @Transactional
     @Override
     public boolean deleteById(Long id) {
-        return this.sysAclMapper.deleteById(id) > 0;
+        SysAcl acl = sysAclMapper.queryById(id);
+        int row = this.sysAclMapper.deleteById(id);
+        if (row > 0) {
+            sysLogService.saveAclLog(acl, null);
+        }
+        return row > 0;
     }
 
+    @Transactional
     @Override
     public int save(AclParam aclParam) {
         checkAcl(aclParam);
         SysAcl acl = buildAcl(aclParam);
-        return sysAclMapper.insert(acl);
+        int row = sysAclMapper.insert(acl);
+        if (row > 0){
+            sysLogService.saveAclLog(null, acl);
+        }
+        return row;
     }
 
     private void checkAcl(AclParam aclParam) {

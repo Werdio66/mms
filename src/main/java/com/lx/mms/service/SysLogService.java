@@ -1,6 +1,9 @@
 package com.lx.mms.service;
 
-import com.lx.mms.entity.SysLog;
+import com.github.pagehelper.PageInfo;
+import com.lx.mms.entity.*;
+import com.lx.mms.entity.param.SearchLogParam;
+
 import java.util.List;
 
 /**
@@ -59,4 +62,19 @@ public interface SysLogService {
      */
     boolean deleteById(Long id);
 
+    void saveDeptLog(SysDept before, SysDept after);
+
+    void saveUserLog(SysUser before, SysUser after);
+
+    void saveAclModuleLog(SysAclModule before, SysAclModule after);
+
+    void saveAclLog(SysAcl before, SysAcl after);
+
+    void saveRoleLog(SysRole before, SysRole after);
+
+    void saveRoleUserLog(Long roleId, SysRoleUser before, SysRoleUser after);
+
+    void saveRoleAclLog(Long roleId, SysRoleAcl before, SysRoleAcl after);
+
+    PageInfo<SysLog> queryPage(SearchLogParam param);
 }

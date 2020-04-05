@@ -1,15 +1,15 @@
 package com.lx.mms.util;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import lombok.extern.slf4j.Slf4j;
-import org.codehaus.jackson.map.DeserializationConfig;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.SerializationConfig;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.codehaus.jackson.map.ser.impl.SimpleFilterProvider;
-import org.codehaus.jackson.type.TypeReference;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 /**
  *  将指定的类转换为 json 字符串
@@ -22,10 +22,9 @@ public class JsonMapper {
 
     // 排除为空的字段
     static {
-        objectMapper.disable(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES);
-        objectMapper.configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false);
-        objectMapper.setFilters(new SimpleFilterProvider().setFailOnUnknownId(false));
-        objectMapper.setSerializationInclusion(JsonSerialize.Inclusion.NON_EMPTY);
+
+        JavaTimeModule module = new JavaTimeModule();
+        objectMapper.registerModule(module);
     }
 
     /**
@@ -40,18 +39,19 @@ public class JsonMapper {
         }
 
         try {
+
             return obj instanceof String ? (String)obj : objectMapper.writeValueAsString(obj);
         } catch (IOException e) {
-            log.warn("将对象转换为字符串出错：{}", e.getMessage());
+            log.error("将对象转换为字符串错误，", e);
             return null;
         }
     }
 
     /**
      *  将字符串转换为对象
-     * @param json                  json 字符串
-     * @param typeReference         对象的类型
      * @param <T>                   传入对象的类型
+     * @param json                  json 字符串
+     * @param typeReference         类型引用
      * @return                      对象
      */
     public static <T> T string2Obj(String json, TypeReference<T> typeReference){
@@ -62,9 +62,9 @@ public class JsonMapper {
         try {
             return typeReference.getType().equals(String.class) ? (T) json : objectMapper.readValue(json, typeReference);
         } catch (IOException e) {
-            log.warn("将字符串：{} 转换为对象：{} 错误：{}",json, typeReference.getType(), e.getMessage());
+            log.info("将字符串：{} 转换为对象", json);
+            log.error("将字符串转换为对象错误，", e);
             return null;
         }
     }
-
 }

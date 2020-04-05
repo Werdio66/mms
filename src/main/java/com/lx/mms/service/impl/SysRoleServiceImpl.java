@@ -5,10 +5,13 @@ import com.lx.mms.entity.SysRole;
 import com.lx.mms.entity.param.RoleParam;
 import com.lx.mms.exception.ParamException;
 import com.lx.mms.mapper.SysRoleMapper;
+import com.lx.mms.service.SysLogService;
 import com.lx.mms.service.SysRoleService;
 import com.lx.mms.util.BeanValidation;
 import com.lx.mms.util.IpUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
@@ -24,6 +27,9 @@ import java.util.List;
 public class SysRoleServiceImpl implements SysRoleService {
     @Resource
     private SysRoleMapper sysRoleMapper;
+
+    @Autowired
+    private SysLogService sysLogService;
 
     /**
      * 通过ID查询单条数据
@@ -75,14 +81,19 @@ public class SysRoleServiceImpl implements SysRoleService {
      * @param roleParam 实例对象
      * @return 实例对象
      */
+    @Transactional
     @Override
     public int update(RoleParam roleParam) {
         checkRole(roleParam);
 
         SysRole role = buildRole(roleParam);
-
+        SysRole before = sysRoleMapper.queryById(roleParam.getId());
         role.setId(roleParam.getId());
-        return sysRoleMapper.update(role);
+        int row = sysRoleMapper.update(role);
+        if (row > 0){
+            sysLogService.saveRoleLog(before, role);
+        }
+        return row;
     }
 
     /**
@@ -91,16 +102,27 @@ public class SysRoleServiceImpl implements SysRoleService {
      * @param id 主键
      * @return 是否成功
      */
+    @Transactional
     @Override
     public boolean deleteById(Long id) {
-        return this.sysRoleMapper.deleteById(id) > 0;
+        SysRole role = sysRoleMapper.queryById(id);
+        int row = this.sysRoleMapper.deleteById(id);
+        if (row > 0){
+            sysLogService.saveRoleLog(role, null);
+        }
+        return row > 0;
     }
 
+    @Transactional
     @Override
     public int save(RoleParam roleParam) {
         checkRole(roleParam);
         SysRole role = buildRole(roleParam);
-        return sysRoleMapper.insert(role);
+        int row = sysRoleMapper.insert(role);
+        if (row > 0){
+            sysLogService.saveRoleLog(null, role);
+        }
+        return row;
     }
 
     private void checkRole(RoleParam roleParam) {

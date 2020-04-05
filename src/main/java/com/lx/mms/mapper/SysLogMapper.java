@@ -1,5 +1,6 @@
 package com.lx.mms.mapper;
 
+import com.lx.mms.dto.SearchLogDto;
 import com.lx.mms.entity.SysLog;
 import org.apache.ibatis.annotations.Param;
 import java.util.List;
@@ -61,4 +62,5 @@ public interface SysLogMapper {
      */
     int deleteById(Long id);
 
+    List<SysLog> queryByCondition(SearchLogDto dto);
 }

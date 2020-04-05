@@ -7,10 +7,13 @@ import com.lx.mms.entity.param.DeptParam;
 import com.lx.mms.exception.ParamException;
 import com.lx.mms.mapper.SysDeptMapper;
 import com.lx.mms.service.SysDeptService;
+import com.lx.mms.service.SysLogService;
 import com.lx.mms.util.BeanValidation;
 import com.lx.mms.util.IpUtil;
 import com.lx.mms.util.LevelUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
@@ -26,6 +29,9 @@ import java.util.List;
 public class SysDeptServiceImpl implements SysDeptService {
     @Resource
     private SysDeptMapper sysDeptMapper;
+
+    @Autowired
+    private SysLogService sysLogService;
 
     /**
      * 通过ID查询单条数据
@@ -77,23 +83,36 @@ public class SysDeptServiceImpl implements SysDeptService {
      * @param deptParam 更新后的参数
      * @return 实例对象
      */
+    @Transactional
     @Override
     public int update(DeptParam deptParam) {
         // 校验参数
         checkDept(deptParam);
-
+        // 获取修改之前的对象
+        SysDept before = sysDeptMapper.queryById(deptParam.getId());
         // 通过构建者模式创建对象
         SysDept dept = buildDept(deptParam);
         dept.setId(deptParam.getId());
-        return sysDeptMapper.update(dept);
+        int row = sysDeptMapper.update(dept);
+        // 记录日志
+        if (row > 0){
+            sysLogService.saveDeptLog(before, dept);
+        }
+        return row;
     }
 
+    @Transactional
     @Override
     public int save(DeptParam deptParam) {
         checkDept(deptParam);
         // 通过构建者模式创建对象
         SysDept dept = buildDept(deptParam);
-        return sysDeptMapper.insert(dept);
+        int row = sysDeptMapper.insert(dept);
+        if (row > 0){
+            // 记录日志
+            sysLogService.saveDeptLog(null, dept);
+        }
+        return row;
     }
 
     // 校验参数
@@ -142,9 +161,16 @@ public class SysDeptServiceImpl implements SysDeptService {
      * @param id 主键
      * @return 是否成功
      */
+    @Transactional
     @Override
     public boolean deleteById(Long id) {
-        return this.sysDeptMapper.deleteById(id) > 0;
+        SysDept before = sysDeptMapper.queryById(id);
+        int row = sysDeptMapper.deleteById(id);
+        // 记录日志
+        if (row > 0){
+            sysLogService.saveDeptLog(before, null);
+        }
+        return row > 0;
     }
 
     // 获取部门的层级

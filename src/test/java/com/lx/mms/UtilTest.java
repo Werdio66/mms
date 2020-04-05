@@ -1,23 +1,30 @@
 package com.lx.mms;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.lx.mms.util.JsonMapper;
 import com.lx.mms.util.LevelUtil;
 import com.lx.mms.util.PasswordUtil;
-import org.codehaus.jackson.type.TypeReference;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Type;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class UtilTest {
 
-    private Dog dog = new Dog("tom", 18);
+    private Dog dog = new Dog("tom", 18, LocalDateTime.now());
 
     @Test
     void jsonMapper(){
 
-        String json = "name : aaa, age : 20";
         String string = JsonMapper.obj2String(dog);
         System.out.println(string);
+
+        Dog dog = JsonMapper.string2Obj(string, new TypeReference<Dog>() {});
+
+        System.out.println(dog);
+
 
     }
 
@@ -25,6 +32,17 @@ public class UtilTest {
     void levelUtil(){
         String level = LevelUtil.caculatateLevel("2", 1L);
         System.out.println(level);
+    }
+
+    @Test
+    void dateTimeFommart(){
+        String time = "2021-11-12 12:12";
+
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        String format = LocalDateTime.now().format(dateTimeFormatter);
+        System.out.println(format);
+        LocalDateTime localDateTime = LocalDateTime.parse(time, dateTimeFormatter);
+        System.out.println(localDateTime);
     }
 
     @Test
@@ -67,4 +85,6 @@ public class UtilTest {
         System.out.println(list.equals(list1));
 
     }
+
+
 }

@@ -3,8 +3,10 @@ package com.lx.mms.service.impl;
 import com.lx.mms.common.RequestHolder;
 import com.lx.mms.entity.SysRoleAcl;
 import com.lx.mms.mapper.SysRoleAclMapper;
+import com.lx.mms.service.SysLogService;
 import com.lx.mms.service.SysRoleAclService;
 import com.lx.mms.util.IpUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -23,6 +25,9 @@ import java.util.List;
 public class SysRoleAclServiceImpl implements SysRoleAclService {
     @Resource
     private SysRoleAclMapper sysRoleAclMapper;
+
+    @Autowired
+    private SysLogService sysLogService;
 
     /**
      * 通过ID查询单条数据
@@ -110,7 +115,10 @@ public class SysRoleAclServiceImpl implements SysRoleAclService {
             ids[index++] = Long.parseLong(id);
         }
 
-        return saveRoleAcl(roleId, ids);
+        int row = saveRoleAcl(roleId, ids);
+
+
+        return row;
     }
 
     private int saveRoleAcl(Long roleId, Long[] ids) {

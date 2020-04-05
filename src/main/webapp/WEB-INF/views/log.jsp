@@ -29,6 +29,7 @@
                             <div class="dataTables_length" id="dynamic-table_length"><label>
                                 展示
                                 <select id="pageSize" name="dynamic-table_length" aria-controls="dynamic-table" class="form-control input-sm">
+                                    <option value="5">5</option>
                                     <option value="10">10</option>
                                     <option value="25">25</option>
                                     <option value="50">50</option>
@@ -49,8 +50,8 @@
                                 <input id="search-operator" type="search" name="operator" class="form-control input-sm" placeholder="操作者" aria-controls="dynamic-table">
                                 <input id="search-before" type="search" name="beforeSeg" class="form-control input-sm" placeholder="操作前的值" aria-controls="dynamic-table">
                                 <input id="search-after" type="search" name="afterSeg" class="form-control input-sm" placeholder="操作后的值" aria-controls="dynamic-table">
-                                <input id="search-from"type="search" name="fromTime" class="form-control input-sm" placeholder="开始时间" aria-controls="dynamic-table"> ~
-                                <input id="search-to" type="search" name="toTime" class="form-control input-sm" placeholder="结束时间" aria-controls="dynamic-table">
+                                <input id="search-from"type="datetime-local" name="fromTime" class="form-control input-sm" placeholder="开始时间" aria-controls="dynamic-table"> ~
+                                <input id="search-to" type="datetime-local" name="toTime" class="form-control input-sm" placeholder="结束时间" aria-controls="dynamic-table">
                                 &nbsp;&nbsp;&nbsp;&nbsp;
                                 <button class="btn btn-info fa fa-check research" style="margin-bottom: 6px;" type="button">
                                     刷新
@@ -123,7 +124,7 @@
 
             function loadLogList() {
                 var pageSize = $("#pageSize").val();
-                var pageNo = $("#logPage .pageNo").val() || 1;
+                var pageNum = $("#logPage .pageNo").val() || 1;
                 var url = "/sys/log/page.json";
                 var beforeSeg = $("#search-before").val();
                 var afterSeg = $("#search-after").val();
@@ -134,7 +135,7 @@
                 $.ajax({
                     url: url,
                     data: {
-                        pageNo: pageNo,
+                        pageNum: pageNum,
                         pageSize: pageSize,
                         beforeSeg: beforeSeg,
                         afterSeg : afterSeg,
@@ -145,16 +146,18 @@
                     },
                     type: 'POST',
                     success: function (result) {
+
+                        console.log("查询结果：", result);
                         renderLogListAndPage(result, url);
                     }
                 });
             }
 
             function renderLogListAndPage(result, url) {
-                if (result.ret) {
+                if (result.rec) {
                     if (result.data.total > 0) {
                         var rendered = Mustache.render(logListTemplate, {
-                            "logList": result.data.data,
+                            "logList": result.data.list,
                             "showType": function () {
                                 return function (text, render) {
                                     var typeStr = "";
@@ -173,31 +176,30 @@
                             },
                             "showDate" :function () {
                                 return function (text, render) {
-                                    return new Date(this.operateTime).Format("yyyy-MM-dd hh:mm:ss");
+                                    return this.operatorTime;
                                 }
                             },
                             "showOldValue": function () {
                                 return function (text, render) {
-                                    return this.oldValue ? ((this.type == 6 || this.type == 7) ? this.oldValue : formatJson(this.oldValue)) : '无';
+                                    return this.oldvalue ? ((this.type == 6 || this.type == 7) ? this.oldvalue : formatJson(this.oldvalue)) : '无';
                                 }
                             },
                             "showNewValue": function () {
                                 return function (text, render) {
-                                    return this.newValue ? ((this.type == 6 || this.type == 7) ? this.newValue : formatJson(this.newValue)) : '无';
+                                    return this.newvalue ? ((this.type == 6 || this.type == 7) ? this.newvalue : formatJson(this.newvalue)) : '无';
                                 }
                             }
                         });
                         $('#logList').html(rendered);
-                        $.each(result.data.data, function (i, log) {
+                        $.each(result.data.list, function (i, log) {
                             logMap[log.id] = log;
                         });
                     } else {
                         $('#logList').html('');
                     }
-                    bindLogClick();
-                    var pageSize = $("#pageSize").val();
-                    var pageNo = $("#logPage .pageNo").val() || 1;
-                    renderPage(url, result.data.total, pageNo, pageSize, result.data.total > 0 ? result.data.data.length : 0, "logPage", renderLogListAndPage);
+                    // bindLogClick();
+                    console.log("分页展示：");
+                    renderPage(result.data, url, "logPage", renderLogListAndPage);
                 } else {
                     showMessage("获取权限操作历史列表", result.msg, false);
                 }

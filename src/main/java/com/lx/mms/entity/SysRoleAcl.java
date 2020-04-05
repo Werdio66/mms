@@ -1,5 +1,6 @@
 package com.lx.mms.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -38,6 +39,7 @@ public class SysRoleAcl implements Serializable {
     /**
     * 操作时间
     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime operatorTime;
     /**
     * 操作者 ip

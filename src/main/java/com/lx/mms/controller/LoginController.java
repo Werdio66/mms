@@ -65,4 +65,12 @@ public class LoginController {
         log.info("登录成功，跳转到后台页面");
         return "redirect:/admin/index.page";
     }
+
+    @GetMapping("/loginOut")
+    public String loginOut(HttpSession session){
+        log.info("注销：");
+        session.invalidate();
+
+        return "signin";
+    }
 }

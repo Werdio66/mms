@@ -65,6 +65,8 @@ dependencies {
     // jackson
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.10.3'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.3'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.10.3'
+    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.10.3'
     compile group: 'org.codehaus.jackson', name: 'jackson-core-asl', version: '1.9.13'
     compile group: 'org.codehaus.jackson', name: 'jackson-mapper-asl', version: '1.9.13'
 
@@ -73,5 +75,8 @@ dependencies {
 
     // email
     compile group: 'org.apache.commons', name: 'commons-email', version: '1.5'
+
+    // redis
+    compile group: 'redis.clients', name: 'jedis', version: '3.2.0'
 
 }

@@ -1,5 +1,6 @@
 package com.lx.mms.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -51,6 +52,7 @@ public class SysAclModule implements Serializable {
     /**
     * 操作的时间
     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime operatorTime;
     /**
     * 操作者的 ip

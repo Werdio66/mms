@@ -6,12 +6,15 @@ import com.lx.mms.entity.SysUser;
 import com.lx.mms.entity.param.UserParam;
 import com.lx.mms.exception.BaseException;
 import com.lx.mms.mapper.SysUserMapper;
+import com.lx.mms.service.SysLogService;
 import com.lx.mms.service.SysUserService;
 import com.lx.mms.util.BeanValidation;
 import com.lx.mms.util.IpUtil;
 import com.lx.mms.util.MD5Util;
 import com.lx.mms.util.PasswordUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
@@ -27,6 +30,9 @@ import java.util.List;
 public class SysUserServiceImpl implements SysUserService {
     @Resource
     private SysUserMapper sysUserMapper;
+
+    @Autowired
+    private SysLogService sysLogService;
 
     /**
      * 通过ID查询单条数据
@@ -78,6 +84,7 @@ public class SysUserServiceImpl implements SysUserService {
      * @param userParam 实例对象
      * @return 实例对象
      */
+    @Transactional
     @Override
     public int update(UserParam userParam) {
          // 校验参数
@@ -87,10 +94,15 @@ public class SysUserServiceImpl implements SysUserService {
         // 检查手机号是否存在
         checkTelephoneExit(userParam.getTelephone(), userParam.getId());
 
+        SysUser before = sysUserMapper.queryById(userParam.getId());
         SysUser user = buildUser(userParam);
 
         user.setId(userParam.getId());
-        return sysUserMapper.update(user);
+        int row = sysUserMapper.update(user);
+        if (row > 0){
+            sysLogService.saveUserLog(before, user);
+        }
+        return row;
     }
 
     /**
@@ -99,11 +111,18 @@ public class SysUserServiceImpl implements SysUserService {
      * @param id 主键
      * @return 是否成功
      */
+    @Transactional
     @Override
     public boolean deleteById(Long id) {
-        return this.sysUserMapper.deleteById(id) > 0;
+        SysUser before = sysUserMapper.queryById(id);
+        int row = sysUserMapper.deleteById(id);
+        if (row > 0){
+            sysLogService.saveUserLog(before, null);
+        }
+        return row > 0;
     }
 
+    @Transactional
     @Override
     public int save(UserParam userParam) {
         // 校验参数
@@ -119,7 +138,11 @@ public class SysUserServiceImpl implements SysUserService {
         user.setPassword(MD5Util.encrypt(PasswordUtil.getRandomPassword()));
         // TODO:发送邮件确认信息
 
-        return sysUserMapper.insert(user);
+        int row = sysUserMapper.insert(user);
+        if (row > 0){
+            sysLogService.saveUserLog(null, user);
+        }
+        return row;
     }
 
     @Override
