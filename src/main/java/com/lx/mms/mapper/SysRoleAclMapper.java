@@ -64,4 +64,6 @@ public interface SysRoleAclMapper {
     int deleteAclByRoleId(Long roleId);
 
     int countByRoleId(Long roleId);
+
+    List<Long> getAclIdListByRoleId(Long roleId);
 }

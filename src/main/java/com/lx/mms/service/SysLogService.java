@@ -72,9 +72,11 @@ public interface SysLogService {
 
     void saveRoleLog(SysRole before, SysRole after);
 
-    void saveRoleUserLog(Long roleId, SysRoleUser before, SysRoleUser after);
+    void saveRoleUserLog(Long roleId, List<Long> before, List<Long> after);
 
-    void saveRoleAclLog(Long roleId, SysRoleAcl before, SysRoleAcl after);
+    void saveRoleAclLog(Long roleId, List<Long> before, List<Long> after);
 
     PageInfo<SysLog> queryPage(SearchLogParam param);
+
+    void rerecover(Long id);
 }

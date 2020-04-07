@@ -54,7 +54,7 @@
                                 <input id="search-to" type="datetime-local" name="toTime" class="form-control input-sm" placeholder="结束时间" aria-controls="dynamic-table">
                                 &nbsp;&nbsp;&nbsp;&nbsp;
                                 <button class="btn btn-info fa fa-check research" style="margin-bottom: 6px;" type="button">
-                                    刷新
+                                    查询
                                 </button>
                             </div>
                         </div>
@@ -123,6 +123,7 @@
             });
 
             function loadLogList() {
+                console.log("加载日志记录列表：");
                 var pageSize = $("#pageSize").val();
                 var pageNum = $("#logPage .pageNo").val() || 1;
                 var url = "/sys/log/page.json";
@@ -197,7 +198,7 @@
                     } else {
                         $('#logList').html('');
                     }
-                    // bindLogClick();
+                    bindLogClick();
                     console.log("分页展示：");
                     renderPage(result.data, url, "logPage", renderLogListAndPage);
                 } else {
@@ -209,19 +210,22 @@
                 $(".log-edit").click(function (e) {
                     e.preventDefault();
                     var logId = $(this).attr("data-id"); // 选中的log id
-                    console.log(logId);
+                    console.log("选中的log id = ", logId);
                     if (confirm("确定要还原这个操作吗?")) {
                         $.ajax({
+                            method : 'get',
                             url: "/sys/log/recover.json",
                             data: {
                                 id: logId
                             },
                             success: function (result) {
-                                if (result.ret) {
+                                if (result.rec) {
+                                    console.log("还原成功");
                                     showMessage("还原历史记录", "操作成功", true);
                                     loadLogList();
                                 } else {
                                     showMessage("还原历史记录", result.msg, false);
+                                    console.log("还原失败");
                                 }
                             }
                         });

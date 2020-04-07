@@ -36,6 +36,16 @@ public class SysLogController {
     }
 
     @ResponseBody
+    @GetMapping("/recover.json")
+    public RespData recover(Long id){
+        log.info("还原操作：");
+        log.info("日志记录的 id = {}", id);
+
+        sysLogService.rerecover(id);
+        return RespData.ok();
+    }
+
+    @ResponseBody
     @RequestMapping("/page.json")
     public RespData page(@RequestParam(name = "pageNum", required = false, defaultValue = "1") Integer pageNum,
                          @RequestParam(name = "pageSize", required = false, defaultValue = "5") Integer pageSize,

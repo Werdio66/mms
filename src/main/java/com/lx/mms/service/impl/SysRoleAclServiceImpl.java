@@ -6,6 +6,7 @@ import com.lx.mms.mapper.SysRoleAclMapper;
 import com.lx.mms.service.SysLogService;
 import com.lx.mms.service.SysRoleAclService;
 import com.lx.mms.util.IpUtil;
+import com.lx.mms.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -99,6 +100,8 @@ public class SysRoleAclServiceImpl implements SysRoleAclService {
     @Transactional
     @Override
     public int saveRoleAclByRoleId(Long roleId, String aclIds) {
+        // 获取之前指定角色的权限 id 列表
+        List<Long> aclIdList = sysRoleAclMapper.getAclIdListByRoleId(roleId);
         // 删除之前分配的权限
         if (sysRoleAclMapper.countByRoleId(roleId) > 0){
             sysRoleAclMapper.deleteAclByRoleId(roleId);
@@ -116,8 +119,8 @@ public class SysRoleAclServiceImpl implements SysRoleAclService {
         }
 
         int row = saveRoleAcl(roleId, ids);
-
-
+        // 保存日志记录
+        sysLogService.saveRoleAclLog(roleId, aclIdList, StringUtil.strToLongId(aclIds));
         return row;
     }
 

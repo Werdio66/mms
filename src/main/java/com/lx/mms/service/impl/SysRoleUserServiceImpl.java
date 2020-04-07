@@ -4,8 +4,10 @@ import com.lx.mms.common.RequestHolder;
 import com.lx.mms.entity.SysRoleUser;
 import com.lx.mms.entity.SysUser;
 import com.lx.mms.mapper.SysRoleUserMapper;
+import com.lx.mms.service.SysLogService;
 import com.lx.mms.service.SysRoleUserService;
 import com.lx.mms.util.IpUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -27,6 +29,9 @@ import java.util.Set;
 public class SysRoleUserServiceImpl implements SysRoleUserService {
     @Resource
     private SysRoleUserMapper sysRoleUserMapper;
+
+    @Autowired
+    private SysLogService sysLogService;
 
     /**
      * 通过ID查询单条数据
@@ -122,6 +127,8 @@ public class SysRoleUserServiceImpl implements SysRoleUserService {
 
             row += sysRoleUserMapper.insert(roleUser);
         }
+        // 日志记录
+        sysLogService.saveRoleUserLog(roleId, userIdList, userIds);
         return row;
     }
 }
