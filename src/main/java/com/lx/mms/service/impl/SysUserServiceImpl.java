@@ -34,6 +34,9 @@ public class SysUserServiceImpl implements SysUserService {
     @Autowired
     private SysLogService sysLogService;
 
+    @Autowired
+    private SysCoreService sysCoreService;
+
     /**
      * 通过ID查询单条数据
      *
@@ -114,6 +117,9 @@ public class SysUserServiceImpl implements SysUserService {
     @Transactional
     @Override
     public boolean deleteById(Long id) {
+        if (sysCoreService.isSuperAdmin()){
+            return false;
+        }
         SysUser before = sysUserMapper.queryById(id);
         int row = sysUserMapper.deleteById(id);
         if (row > 0){

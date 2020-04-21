@@ -74,8 +74,7 @@ public class SysTreeService {
     /**
      * 将权限列表转换成树
      *
-     * @param aclDtoList
-     * @return
+     * @param aclDtoList    权限点列表
      */
     private List<AclModuleLevelDto> aclListToTree(List<AclDto> aclDtoList) {
 
@@ -95,6 +94,11 @@ public class SysTreeService {
         return aclModuleLevelList;
     }
 
+    /**
+     *  将权限点对象挂载到对应的权限模块上
+     * @param aclModuleLevelList        权限模块列表
+     * @param moduleIdAclMap            对应权限模块的权限点
+     */
     private void bindAclsWithOrder(List<AclModuleLevelDto> aclModuleLevelList, Multimap<Long, AclDto> moduleIdAclMap) {
         if (CollectionUtils.isEmpty(aclModuleLevelList)) {
             return;

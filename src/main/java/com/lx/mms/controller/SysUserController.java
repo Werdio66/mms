@@ -73,8 +73,11 @@ public class SysUserController {
         log.info("删除用户：");
         log.info("用户 id = {}", id);
 
-        sysUserService.deleteById(id);
-        return RespData.ok();
+        if (sysUserService.deleteById(id)){
+            return RespData.ok();
+        }else {
+            return RespData.error("超级管理员不能删除");
+        }
     }
 
     @ResponseBody

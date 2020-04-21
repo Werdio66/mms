@@ -21,6 +21,13 @@ public class SysCacheService {
         saveCache(value, timeoutSeconds, prefix, null);
     }
 
+    /**
+     *  保存到 redis 缓存中
+     * @param value                 保存的数据
+     * @param timeoutSeconds        超时时间，时间到后就自动删除
+     * @param prefix                key 的前缀
+     * @param keys                  key 值
+     */
     public void saveCache(String value, int timeoutSeconds, CacheKeysConstants prefix, String ... keys){
         if (value == null){
             return;
@@ -44,6 +51,11 @@ public class SysCacheService {
 
     }
 
+    /**
+     *  从 redis 中获取指定 key 的值
+     * @param prefix        key 的前缀
+     * @param keys          key 值
+     */
     public String getFromCache(CacheKeysConstants prefix, String ... keys){
         String cacheKey = generateCacheKey(prefix, keys);
         ShardedJedis shardedJedis = null;
@@ -59,6 +71,10 @@ public class SysCacheService {
             redisPool.safeClose(shardedJedis);
         }
     }
+
+    /**
+     *  拼接 key 值
+     */
     private String generateCacheKey(CacheKeysConstants prefix, String ... keys){
         StringBuilder key = new StringBuilder(prefix.name());
         if (keys != null && keys.length > 0){

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import com.lx.mms.exception.ParamException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 
@@ -56,15 +57,15 @@ public class JsonMapper {
      */
     public static <T> T string2Obj(String json, TypeReference<T> typeReference){
         if (StringUtils.isEmpty(json)){
-            return null;
+            throw new ParamException("将字符串转换为对象错误 : json 数据为空");
         }
 
         try {
             return typeReference.getType().equals(String.class) ? (T) json : objectMapper.readValue(json, typeReference);
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.info("将字符串：{} 转换为对象", json);
             log.error("将字符串转换为对象错误，", e);
-            return null;
+            throw new ParamException("将字符串转换为对象错误，" + e.getMessage());
         }
     }
 }

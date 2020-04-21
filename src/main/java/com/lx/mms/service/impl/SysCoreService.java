@@ -2,6 +2,7 @@ package com.lx.mms.service.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.lx.mms.common.CacheKeysConstants;
+import com.lx.mms.common.Constance;
 import com.lx.mms.common.RequestHolder;
 import com.lx.mms.entity.SysAcl;
 import com.lx.mms.mapper.SysAclMapper;
@@ -62,7 +63,7 @@ public class SysCoreService {
      *  是否为超级管理员
      */
     public boolean isSuperAdmin(){
-        if ("superadmin".equals(RequestHolder.getCurrentUser().getUsername())){
+        if (Constance.SUPER_ADMIN.equals(RequestHolder.getCurrentUser().getUsername())){
             return true;
         }
         return false;
